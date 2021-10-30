@@ -36,7 +36,7 @@ class Stopwatch:
         self.solvesList.pack_forget()       
  
         #view solves button
-        self.infoButton = tk.Button(self.root,text = 'Session Info',width= 40,font = ("Arial 12 bold"),command=self.view_solves)
+        self.infoButton = tk.Button(self.root,text = 'View Solves',width= 40,font = ("Arial 12 bold"),command=self.view_solves)
         self.infoButton.pack()
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
 
@@ -52,9 +52,19 @@ class Stopwatch:
         os.system('tail -n +2 "scrambles.txt" > "tmp.txt" && mv "tmp.txt" "scrambles.txt"')       
         
         #scramble label
-        self.scramble = tk.Label(self.root, text= scramblestr, font = ("Arial 12 bold"))
+        #split scramble in half and put second half on new line to increase readability 
+        middle = int(len(scramblestr)/2)
+
+        if scramblestr[middle] == " ":
+            scramblestr = scramblestr[:middle] +  "\n" + scramblestr[middle:]
+        elif scramblestr[middle + 1] == " ":
+            scramblestr = scramblestr[:middle + 1] +  "\n" + scramblestr[middle + 1:]
+        else:
+            scramblestr = scramblestr[:middle - 1] +  "\n" + scramblestr[middle -1 :]
+
+        self.scramble = tk.Label(self.root, text= scramblestr, font = ("Arial 14 bold"))
         self.scramble.pack()
-        self.scramble.place(relx = 0.5, rely = 0.1, anchor = 'center')
+        self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
 
         #GPIO pins 19 and 26
         self.button1 = Button(19)
@@ -142,7 +152,17 @@ class Stopwatch:
 
                 stream = os.popen('head -n 1 scrambles.txt')
                 scramblestr = stream.read()
-                
+              
+                #split scramble in half and put second half on new line to increase readability 
+                middle = int(len(scramblestr)/2)
+
+                if scramblestr[middle] == " ":
+                    scramblestr = scramblestr[:middle] +  "\n" + scramblestr[middle:]
+                elif scramblestr[middle + 1] == " ":
+                    scramblestr = scramblestr[:middle + 1] +  "\n" + scramblestr[middle + 1:]
+                else:
+                    scramblestr = scramblestr[:middle - 1] +  "\n" + scramblestr[middle -1 :]
+ 
                 self.scramble.config(text = scramblestr)
 
                 self.display.config(foreground = "black")
