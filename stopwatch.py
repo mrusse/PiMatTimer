@@ -25,11 +25,26 @@ class Stopwatch:
         self.display = tk.Label(self.root, text='0.00', font = ("Arial Bold", 50))
         self.display.pack()
         self.display.place(relx = 0.5, rely = 0.5, anchor = 'center')
-        
+
+        #listbox and scrollbar
+        self.scrollbar = tk.Scrollbar(self.root)
+        self.scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
+        self.solvesList = tk.Listbox(self.root, height = 14, width = 58, yscrollcommand = self.scrollbar.set,font = ("Arial 11 bold")) 
+        self.solvesList.pack(side= tk.LEFT, fill = tk.Y)
+        self.scrollbar.config(command = self.solvesList.yview)
+        self.scrollbar.pack_forget()
+        self.solvesList.pack_forget()       
+ 
         #view solves button
         self.infoButton = tk.Button(self.root,text = 'Session Info',width= 40,font = ("Arial 12 bold"),command=self.view_solves)
         self.infoButton.pack()
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
+
+        #back button
+        self.backButton = tk.Button(self.root,text = 'Back',font = ("Arial 12 bold"),command=self.view_timer)
+        self.backButton.pack()
+        self.backButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
+        self.backButton.place_forget()
 
         #get first scramble from file then delete it from the file
         stream = os.popen('head -n 1 scrambles.txt')
@@ -90,8 +105,11 @@ class Stopwatch:
         if self.button1.is_pressed and self.button2.is_pressed:
 
             if not self.paused:                
+
+                self.display.config(foreground = "red")
    
                 lastTime = self.display.cget("text")
+                self.solvesList.insert (0, lastTime)
                 self.toggle()
 
                 #this appends to a log file lawl
@@ -109,10 +127,12 @@ class Stopwatch:
                 self.button1.wait_for_release()
                 self.button2.wait_for_release()
 
+                self.display.config(foreground = "black")
+
             else:
                 self.display.config(foreground = "green")
-                self.infoButton.place(relx = 0.5, rely = 2, anchor = 'center') 
-                self.scramble.place(relx = 0.5, rely = -1, anchor = 'center')
+                self.infoButton.place_forget() 
+                self.scramble.place_forget()
 
                 self.lastScramble = self.scramble.cget("text")
                 self.display.update_idletasks() 
@@ -131,6 +151,46 @@ class Stopwatch:
         self.display.after(10,self.checkInput)
 
     def view_solves(self):
-        quit()
+
+        self.solvesList.pack(side = tk.LEFT,anchor = tk.NW,fill = tk.X)
+        self.scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
+        self.backButton.place(relx = 0.5, rely = 0.92, anchor = 'center')
+
+        self.solvesList.delete(0,tk.END)
+
+        solveFile = open("solves.txt")
+        solveArray = []
+    
+        x = 1
+
+        for line in solveFile:
+            if x < 10:
+                solveArray.append("  " + str(x) + ") " + str(line).strip())
+            else:
+                solveArray.append(str(x) + ") " + str(line).strip())
+            x += 1
+    
+        solveArray.reverse()
+    
+        for i in range(len(solveArray)):
+            current = solveArray[i].split(" - ")
+            self.solvesList.insert(tk.END,current[0])
+            self.solvesList.insert(tk.END,current[1])
+            self.solvesList.insert(tk.END," ") 
+
+        solveFile.close() 
+
+        self.scramble.place_forget()
+        self.infoButton.place_forget() 
+        self.display.place_forget()
+
+    def view_timer(self):
+        self.scramble.place(relx = 0.5, rely = 0.1, anchor = 'center')
+        self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
+        self.display.place(relx = 0.5, rely = 0.5, anchor = 'center')
+
+        self.backButton.place_forget()
+        self.solvesList.pack_forget()
+        self.scrollbar.pack_forget()
        
 Stopwatch()
