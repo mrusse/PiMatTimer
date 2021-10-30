@@ -5,8 +5,7 @@ from time import time
 import random
 import sys
 import os
-
-#solves = open('solves.txt', 'a')
+import logging
 
 class Stopwatch:
     
@@ -18,21 +17,26 @@ class Stopwatch:
         self.root.config(cursor="none") 
 
         self.lastScramble = ""
-        #self.solves = open('solves.txt', 'a',536870912)
-     
+        logging.basicConfig(filename="solves.txt",format='%(message)s',filemode='a')
+        self.logger=logging.getLogger()  
+        self.logger.setLevel(logging.DEBUG)  
+
+        #timer label
         self.display = tk.Label(self.root, text='0.00', font = ("Arial Bold", 50))
         self.display.pack()
         self.display.place(relx = 0.5, rely = 0.5, anchor = 'center')
-
-        self.infoButton = tk.Button(self.root,text = 'Session Info',width= 40,font = ("Arial 12 bold"),command=self.save)
+        
+        #view solves button
+        self.infoButton = tk.Button(self.root,text = 'Session Info',width= 40,font = ("Arial 12 bold"),command=self.view_solves)
         self.infoButton.pack()
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
 
         #get first scramble from file then delete it from the file
         stream = os.popen('head -n 1 scrambles.txt')
         scramblestr = stream.read() 
-        stream = os.popen('sed "1d" -i\'\' scrambles.txt')       
+        os.system('tail -n +2 "scrambles.txt" > "tmp.txt" && mv "tmp.txt" "scrambles.txt"')       
         
+        #scramble label
         self.scramble = tk.Label(self.root, text= scramblestr, font = ("Arial 12 bold"))
         self.scramble.pack()
         self.scramble.place(relx = 0.5, rely = 0.1, anchor = 'center')
@@ -40,8 +44,7 @@ class Stopwatch:
         #GPIO pins 19 and 26
         self.button1 = Button(19)
         self.button2 = Button(26)
-
-        #self.close()
+ 
         self.paused = True
 
         self.checkInput()  
@@ -92,7 +95,8 @@ class Stopwatch:
                 self.toggle()
 
                 #this appends to a log file lawl
-                solveStr = lastTime + " - " + self.lastScramble 
+                solveStr = lastTime + " - " + self.lastScramble.replace("\n", "") 
+                self.logger.info(solveStr) 
                 print(solveStr)
 
                 self.display.update_idletasks()
@@ -100,6 +104,8 @@ class Stopwatch:
                 self.scramble.place(relx = 0.5, rely = 0.1, anchor = 'center')
                 self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
 
+                os.system('tail -n +2 "scrambles.txt" > "tmp.txt" && mv "tmp.txt" "scrambles.txt"')       
+ 
                 self.button1.wait_for_release()
                 self.button2.wait_for_release()
 
@@ -116,7 +122,7 @@ class Stopwatch:
 
                 stream = os.popen('head -n 1 scrambles.txt')
                 scramblestr = stream.read()
-                stream = os.popen('sed "1d" -i\'\' scrambles.txt')
+                
                 self.scramble.config(text = scramblestr)
 
                 self.display.config(foreground = "black")
@@ -124,12 +130,7 @@ class Stopwatch:
 
         self.display.after(10,self.checkInput)
 
-    def save(self):
-        print("here")
+    def view_solves(self):
         quit()
-        #solves.flush()
        
-
-  
-
 Stopwatch()
