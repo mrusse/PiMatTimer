@@ -24,7 +24,7 @@ class Stopwatch:
         #timer label
         self.display = tk.Label(self.root, text='0.00', font = ("Arial Bold", 50))
         self.display.pack()
-        self.display.place(relx = 0.5, rely = 0.5, anchor = 'center')
+        self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
 
         #listbox and scrollbar
         self.scrollbar = tk.Scrollbar(self.root)
@@ -34,6 +34,11 @@ class Stopwatch:
         self.scrollbar.config(command = self.solvesList.yview)
         self.scrollbar.pack_forget()
         self.solvesList.pack_forget()       
+
+        #ao5 label
+        self.ao5Label = tk.Label(self.root, text='ao5: ', font = ("Arial 12 bold"))
+        self.ao5Label.pack()
+        self.ao5Label.place(relx = 0.5, rely = 0.65, anchor = 'center')
  
         #view solves button
         self.infoButton = tk.Button(self.root,text = 'View Solves',width= 40,font = ("Arial 12 bold"),command=self.view_solves)
@@ -50,7 +55,63 @@ class Stopwatch:
         stream = os.popen('head -n 1 scrambles.txt')
         scramblestr = stream.read() 
         os.system('tail -n +2 "scrambles.txt" > "tmp.txt" && mv "tmp.txt" "scrambles.txt"')       
-        
+       
+        #fill up listbox and get average
+        if os.path.isfile("solves.txt"):
+            solveFile = open("solves.txt")
+            solveArray = []
+    
+            x = 1
+
+            for line in solveFile:
+                if x < 10:
+                    solveArray.append("  " + str(x) + ") " + str(line).strip())
+                else:
+                    solveArray.append(str(x) + ") " + str(line).strip())
+                x += 1
+    
+            solveArray.reverse()
+    
+            for i in range(len(solveArray)):
+                current = solveArray[i].split(" - ")
+                self.solvesList.insert(tk.END,current[0])
+                self.solvesList.insert(tk.END,current[1])
+                self.solvesList.insert(tk.END," ") 
+
+            solveFile.close()
+
+            if self.solvesList.size() > 13:
+
+                ao5Array = []
+                ao5Array.append(self.solvesList.get(0).split(") ")[1]) 
+                ao5Array.append(self.solvesList.get(3).split(") ")[1])
+                ao5Array.append(self.solvesList.get(6).split(") ")[1])
+                ao5Array.append(self.solvesList.get(9).split(") ")[1])
+                ao5Array.append(self.solvesList.get(12).split(") ")[1])
+
+                #for k in range(5):
+                    #print(ao5Array[k])                
+
+                top = float(ao5Array[0])
+                bot = float(ao5Array[0])
+                total = 0
+                    
+                for i in range(5):
+                    if float(ao5Array[i]) > top:
+                        top = float(ao5Array[i])
+                    if float(ao5Array[i]) < bot:
+                        bot = float(ao5Array[i])
+                    
+                for j in range(5):
+                    if not float(ao5Array[j]) == top and not float(ao5Array[j]) == bot:
+                        total += float(ao5Array[j])
+                    
+                ao5 = '%.2f' % (total /3)
+                self.ao5Label.config(text= "ao5: " + str(ao5)) 
+                            
+            else:
+                self.ao5Label.config(text= "ao5: ")
+    
         #scramble label
         #split scramble in half and put second half on new line to increase readability 
         middle = int(len(scramblestr)/2)
@@ -111,7 +172,6 @@ class Stopwatch:
 
     def checkInput(self):
 
-
         if self.button1.is_pressed and self.button2.is_pressed:
 
             if not self.paused:                
@@ -130,19 +190,39 @@ class Stopwatch:
                 self.solvesList.insert(1,self.lastScramble.replace("\n", ""))
                 self.solvesList.insert(2," ")
 
-                print(self.solvesList.size())
+                #print(self.solvesList.size())
 
                 if self.solvesList.size() > 13:
+
                     ao5Array = []
                     ao5Array.append(self.solvesList.get(0).split(") ")[1]) 
                     ao5Array.append(self.solvesList.get(3).split(") ")[1])
                     ao5Array.append(self.solvesList.get(6).split(") ")[1])
                     ao5Array.append(self.solvesList.get(9).split(") ")[1])
                     ao5Array.append(self.solvesList.get(12).split(") ")[1])
+                    
+                    #for k in range(5):
+                        #print(ao5Array[k])                
 
                     top = float(ao5Array[0])
                     bot = float(ao5Array[0])
-                                        
+                    total = 0
+                    
+                    for i in range(5):
+                        if float(ao5Array[i]) > top:
+                            top = float(ao5Array[i])
+                        if float(ao5Array[i]) < bot:
+                            bot = float(ao5Array[i])
+                    
+                    for j in range(5):
+                        if not float(ao5Array[j]) == top and not float(ao5Array[j]) == bot:
+                            total += float(ao5Array[j])
+                    
+                    ao5 = '%.2f' % (total /3)
+                    self.ao5Label.config(text= "ao5: " + str(ao5)) 
+                            
+                else:
+                    self.ao5Label.config(text= "ao5: ")                                        
 
                 self.display.update_idletasks()
 
@@ -192,6 +272,7 @@ class Stopwatch:
         self.solvesList.pack(side = tk.LEFT,anchor = tk.NW,fill = tk.X)
         self.scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
         self.backButton.place(relx = 0.5, rely = 0.92, anchor = 'center')
+        self.ao5Label.place(relx = 0.5, rely = 0.65, anchor = 'center')
 
         self.solvesList.delete(0,tk.END)
 
@@ -216,7 +297,8 @@ class Stopwatch:
             self.solvesList.insert(tk.END," ") 
 
         solveFile.close() 
-
+        
+        self.ao5Label.place_forget()
         self.scramble.place_forget()
         self.infoButton.place_forget() 
         self.display.place_forget()
@@ -224,7 +306,7 @@ class Stopwatch:
     def view_timer(self):
         self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
-        self.display.place(relx = 0.5, rely = 0.5, anchor = 'center')
+        self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
 
         self.backButton.place_forget()
         self.solvesList.pack_forget()
