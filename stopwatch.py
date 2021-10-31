@@ -119,7 +119,6 @@ class Stopwatch:
                 self.display.config(foreground = "red")
    
                 lastTime = self.display.cget("text")
-                self.solvesList.insert (0, lastTime)
                 self.toggle()
 
                 #this appends to a log file lawl
@@ -127,9 +126,27 @@ class Stopwatch:
                 self.logger.info(solveStr) 
                 print(solveStr)
 
+                self.solvesList.insert(0, ") " + lastTime) 
+                self.solvesList.insert(1,self.lastScramble.replace("\n", ""))
+                self.solvesList.insert(2," ")
+
+                print(self.solvesList.size())
+
+                if self.solvesList.size() > 13:
+                    ao5Array = []
+                    ao5Array.append(self.solvesList.get(0).split(") ")[1]) 
+                    ao5Array.append(self.solvesList.get(3).split(") ")[1])
+                    ao5Array.append(self.solvesList.get(6).split(") ")[1])
+                    ao5Array.append(self.solvesList.get(9).split(") ")[1])
+                    ao5Array.append(self.solvesList.get(12).split(") ")[1])
+
+                    top = float(ao5Array[0])
+                    bot = float(ao5Array[0])
+                                        
+
                 self.display.update_idletasks()
 
-                self.scramble.place(relx = 0.5, rely = 0.1, anchor = 'center')
+                self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
                 self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
 
                 os.system('tail -n +2 "scrambles.txt" > "tmp.txt" && mv "tmp.txt" "scrambles.txt"')       
@@ -205,7 +222,7 @@ class Stopwatch:
         self.display.place_forget()
 
     def view_timer(self):
-        self.scramble.place(relx = 0.5, rely = 0.1, anchor = 'center')
+        self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
         self.display.place(relx = 0.5, rely = 0.5, anchor = 'center')
 
