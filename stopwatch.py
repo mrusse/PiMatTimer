@@ -36,10 +36,15 @@ class Stopwatch:
         self.solvesList.pack_forget()       
 
         #ao5 label
-        self.ao5Label = tk.Label(self.root, text='ao5: ', font = ("Arial 12 bold"))
+        self.ao5Label = tk.Label(self.root, text='ao5: ', font = ("Arial 13 bold"))
         self.ao5Label.pack()
-        self.ao5Label.place(relx = 0.5, rely = 0.65, anchor = 'center')
- 
+        self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
+
+        #ao12 label
+        self.ao12Label = tk.Label(self.root, text='ao12: ', font = ("Arial 13 bold"))
+        self.ao12Label.pack()
+        self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
+        
         #view solves button
         self.infoButton = tk.Button(self.root,text = 'View Solves',width= 40,font = ("Arial 12 bold"),command=self.view_solves)
         self.infoButton.pack()
@@ -80,37 +85,8 @@ class Stopwatch:
 
             solveFile.close()
 
-            if self.solvesList.size() > 13:
-
-                ao5Array = []
-                ao5Array.append(self.solvesList.get(0).split(") ")[1]) 
-                ao5Array.append(self.solvesList.get(3).split(") ")[1])
-                ao5Array.append(self.solvesList.get(6).split(") ")[1])
-                ao5Array.append(self.solvesList.get(9).split(") ")[1])
-                ao5Array.append(self.solvesList.get(12).split(") ")[1])
-
-                #for k in range(5):
-                    #print(ao5Array[k])                
-
-                top = float(ao5Array[0])
-                bot = float(ao5Array[0])
-                total = 0
-                    
-                for i in range(5):
-                    if float(ao5Array[i]) > top:
-                        top = float(ao5Array[i])
-                    if float(ao5Array[i]) < bot:
-                        bot = float(ao5Array[i])
-                    
-                for j in range(5):
-                    if not float(ao5Array[j]) == top and not float(ao5Array[j]) == bot:
-                        total += float(ao5Array[j])
-                    
-                ao5 = '%.2f' % (total /3)
-                self.ao5Label.config(text= "ao5: " + str(ao5)) 
-                            
-            else:
-                self.ao5Label.config(text= "ao5: ")
+            self.set_average(5) 
+            self.set_average(12)            
     
         #scramble label
         #split scramble in half and put second half on new line to increase readability 
@@ -192,40 +168,13 @@ class Stopwatch:
 
                 #print(self.solvesList.size())
 
-                if self.solvesList.size() > 13:
-
-                    ao5Array = []
-                    ao5Array.append(self.solvesList.get(0).split(") ")[1]) 
-                    ao5Array.append(self.solvesList.get(3).split(") ")[1])
-                    ao5Array.append(self.solvesList.get(6).split(") ")[1])
-                    ao5Array.append(self.solvesList.get(9).split(") ")[1])
-                    ao5Array.append(self.solvesList.get(12).split(") ")[1])
-                    
-                    #for k in range(5):
-                        #print(ao5Array[k])                
-
-                    top = float(ao5Array[0])
-                    bot = float(ao5Array[0])
-                    total = 0
-                    
-                    for i in range(5):
-                        if float(ao5Array[i]) > top:
-                            top = float(ao5Array[i])
-                        if float(ao5Array[i]) < bot:
-                            bot = float(ao5Array[i])
-                    
-                    for j in range(5):
-                        if not float(ao5Array[j]) == top and not float(ao5Array[j]) == bot:
-                            total += float(ao5Array[j])
-                    
-                    ao5 = '%.2f' % (total /3)
-                    self.ao5Label.config(text= "ao5: " + str(ao5)) 
-                            
-                else:
-                    self.ao5Label.config(text= "ao5: ")                                        
+                self.set_average(5)                                  
+                self.set_average(12)
 
                 self.display.update_idletasks()
 
+                self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
+                self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
                 self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
                 self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
 
@@ -240,6 +189,8 @@ class Stopwatch:
                 self.display.config(foreground = "green")
                 self.infoButton.place_forget() 
                 self.scramble.place_forget()
+                self.ao5Label.place_forget()
+                self.ao12Label.place_forget()
 
                 self.lastScramble = self.scramble.cget("text")
                 self.display.update_idletasks() 
@@ -276,29 +227,31 @@ class Stopwatch:
 
         self.solvesList.delete(0,tk.END)
 
-        solveFile = open("solves.txt")
-        solveArray = []
+        if os.path.isfile("solves.txt"):
+            solveFile = open("solves.txt")
+            solveArray = []
     
-        x = 1
+            x = 1
 
-        for line in solveFile:
-            if x < 10:
-                solveArray.append("  " + str(x) + ") " + str(line).strip())
-            else:
-                solveArray.append(str(x) + ") " + str(line).strip())
-            x += 1
+            for line in solveFile:
+                if x < 10:
+                    solveArray.append("  " + str(x) + ") " + str(line).strip())
+                else:
+                    solveArray.append(str(x) + ") " + str(line).strip())
+                x += 1
     
-        solveArray.reverse()
+            solveArray.reverse()
     
-        for i in range(len(solveArray)):
-            current = solveArray[i].split(" - ")
-            self.solvesList.insert(tk.END,current[0])
-            self.solvesList.insert(tk.END,current[1])
-            self.solvesList.insert(tk.END," ") 
+            for i in range(len(solveArray)):
+                current = solveArray[i].split(" - ")
+                self.solvesList.insert(tk.END,current[0])
+                self.solvesList.insert(tk.END,current[1])
+                self.solvesList.insert(tk.END," ") 
 
-        solveFile.close() 
+            solveFile.close() 
         
         self.ao5Label.place_forget()
+        self.ao12Label.place_forget()
         self.scramble.place_forget()
         self.infoButton.place_forget() 
         self.display.place_forget()
@@ -307,9 +260,52 @@ class Stopwatch:
         self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
         self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
+        self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
+        self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
 
         self.backButton.place_forget()
         self.solvesList.pack_forget()
         self.scrollbar.pack_forget()
+
+    def set_average(self, number):
+        
+        if self.solvesList.size() >= ((number*3) - 1):
+
+            aoArray = []
+
+            for i in range(0,number*3,3):
+                aoArray.append(self.solvesList.get(i).split(") ")[1]) 
+                #print(i)                   
+            
+            #for k in range(number):
+                #print(aoArray[k])                
+
+            top = float(aoArray[0])
+            bot = float(aoArray[0])
+            total = 0
+
+            #print(len(aoArray))
+                    
+            for j in range(number):
+                if float(aoArray[j]) > top:
+                    top = float(aoArray[j])
+                if float(aoArray[j]) < bot:
+                    bot = float(aoArray[j])
+                    
+            for j in range(number):
+                if not float(aoArray[j]) == top and not float(aoArray[j]) == bot:
+                    total += float(aoArray[j])
+                    
+            average = '%.2f' % (total / (number - 2))
+            if number == 5:
+                self.ao5Label.config(text= "ao5: " + str(average)) 
+            if number == 12:
+                self.ao12Label.config(text= "ao12: " + str(average)) 
+        else:
+            if number == 5:
+                self.ao5Label.config(text= "ao5: ") 
+            if number == 12:
+                self.ao12Label.config(text= "ao12: ") 
+                                                                                     
        
 Stopwatch()
