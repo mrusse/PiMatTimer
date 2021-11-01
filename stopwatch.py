@@ -6,6 +6,7 @@ import random
 import sys
 import os
 import logging
+from subprocess import call
 
 class Stopwatch:
     
@@ -17,59 +18,51 @@ class Stopwatch:
         self.root.config(cursor="none") 
 
         self.lastScramble = ""
-        logging.basicConfig(filename="solves.txt",format='%(message)s',filemode='a')
+        logging.basicConfig(filename="/home/pi/CubeTimer/solves.txt",format='%(message)s',filemode='a')
         self.logger=logging.getLogger()  
         self.logger.setLevel(logging.DEBUG)  
 
         #timer label
         self.display = tk.Label(self.root, text='0.00', font = ("Arial Bold", 50))
-        self.display.pack()
         self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
 
         #listbox and scrollbar
         self.scrollbar = tk.Scrollbar(self.root)
-        self.scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
         self.solvesList = tk.Listbox(self.root, height = 14, width = 58, yscrollcommand = self.scrollbar.set,font = ("Arial 11 bold")) 
-        self.solvesList.pack(side= tk.LEFT, fill = tk.Y)
-        self.scrollbar.config(command = self.solvesList.yview)
-        self.scrollbar.pack_forget()
-        self.solvesList.pack_forget()       
+        self.scrollbar.config(command = self.solvesList.yview)       
 
         #ao5 label
         self.ao5Label = tk.Label(self.root, text='ao5: ', font = ("Arial 13 bold"))
-        self.ao5Label.pack()
         self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
 
         #ao12 label
-        self.ao12Label = tk.Label(self.root, text='ao12: ', font = ("Arial 13 bold"))
-        self.ao12Label.pack()
+        self.ao12Label = tk.Label(self.root, text='ao12: ', font = ("Arial 13 bold")) 
         self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
         
         #view solves button
         self.infoButton = tk.Button(self.root,text = 'View Solves',width= 40,font = ("Arial 12 bold"),command=self.view_solves)
-        self.infoButton.pack()
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
 
         #back button
-        self.backButton = tk.Button(self.root,text = 'Back',font = ("Arial 12 bold"),command=self.view_timer)
-        self.backButton.pack()
-        self.backButton.place(relx = 0.2, rely = 0.92, anchor = 'center') 
-        self.backButton.place_forget()
+        self.backButton = tk.Button(self.root,text = 'Back',font = ("Arial 12 bold"),command=self.view_timer)  
         
         #delete selected button
-        self.removeSelected = tk.Button(self.root,text = 'Delete Selected',font = ("Arial 12 bold"),command=self.remove_selected)
-        self.removeSelected.pack()
-        self.removeSelected.place(relx = 0.2, rely = 0.92, anchor = 'center') 
-        self.removeSelected.place_forget()
+        self.removeSelected = tk.Button(self.root,text = 'Delete',font = ("Arial 12 bold"),command=self.remove_selected)  
+        
+        #exit button
+        self.exit = tk.Button(self.root,text = 'Exit',font = ("Arial 12 bold"),command=self.exit)  
+
+        #shutdown button
+        self.shutdown = tk.Button(self.root,text = 'Shutdown',font = ("Arial 12 bold"),command=self.shutdown)  
 
         #get first scramble from file then delete it from the file
-        stream = os.popen('head -n 1 scrambles.txt')
+        stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles.txt')
         scramblestr = stream.read() 
-        os.system('tail -n +2 "scrambles.txt" > "tmp.txt" && mv "tmp.txt" "scrambles.txt"')       
+        os.system('tail -n +2 "/home/pi/CubeTimer/scrambles.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles.txt"')       
        
         #fill up listbox and get average
-        if os.path.isfile("solves.txt"):
-            solveFile = open("solves.txt")
+        if os.path.isfile("/home/pi/CubeTimer/solves.txt"):
+            solveFile = open("/home/pi/CubeTimer/solves.txt")
             solveArray = []
     
             x = 1
@@ -105,8 +98,7 @@ class Stopwatch:
         else:
             scramblestr = scramblestr[:middle - 1] +  "\n" + scramblestr[middle -1 :]
 
-        self.scramble = tk.Label(self.root, text= scramblestr, font = ("Arial 14 bold"))
-        self.scramble.pack()
+        self.scramble = tk.Label(self.root, text= scramblestr, font = ("Arial 14 bold")) 
         self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
 
         #GPIO pins 19 and 26
@@ -184,7 +176,7 @@ class Stopwatch:
                 self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
                 self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
 
-                os.system('tail -n +2 "scrambles.txt" > "tmp.txt" && mv "tmp.txt" "scrambles.txt"')       
+                os.system('tail -n +2 "/home/pi/CubeTimer/scrambles.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles.txt"')       
  
                 self.button1.wait_for_release()
                 self.button2.wait_for_release()
@@ -204,7 +196,7 @@ class Stopwatch:
                 self.button1.wait_for_release()
                 self.button2.wait_for_release()
 
-                stream = os.popen('head -n 1 scrambles.txt')
+                stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles.txt')
                 scramblestr = stream.read()
               
                 #split scramble in half and put second half on new line to increase readability 
@@ -228,14 +220,16 @@ class Stopwatch:
 
         self.solvesList.pack(side = tk.LEFT,anchor = tk.NW,fill = tk.X)
         self.scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
-        self.backButton.place(relx = 0.2, rely = 0.92, anchor = 'center')
+        self.backButton.place(relx = 0.11, rely = 0.92, anchor = 'center')
         self.ao5Label.place(relx = 0.5, rely = 0.65, anchor = 'center')
-        self.removeSelected.place(relx = 0.7, rely = 0.92, anchor = 'center') 
+        self.removeSelected.place(relx = 0.35, rely = 0.92, anchor = 'center') 
+        self.exit.place(relx = 0.57, rely = 0.92, anchor = 'center') 
+        self.shutdown.place(relx = 0.83, rely = 0.92, anchor = 'center')
 
         self.solvesList.delete(0,tk.END)
 
-        if os.path.isfile("solves.txt"):
-            solveFile = open("solves.txt")
+        if os.path.isfile("/home/pi/CubeTimer/solves.txt"):
+            solveFile = open("/home/pi/CubeTimer/solves.txt")
             solveArray = []
     
             x = 1
@@ -275,7 +269,7 @@ class Stopwatch:
             self.solvesList.delete(selection[0],selection[0]+2)
             
             lineToDelete = selectedArray[0].strip()
-            deleteString = "sed -i '{0}d' solves.txt".format(lineToDelete)
+            deleteString = "sed -i '{0}d' /home/pi/CubeTimer/solves.txt".format(lineToDelete)
             os.system(deleteString)
             print("Deleted solve #" + lineToDelete + ": " +selectedArray[1])
 
@@ -294,6 +288,8 @@ class Stopwatch:
         self.solvesList.pack_forget()
         self.scrollbar.pack_forget()
         self.removeSelected.place_forget()
+        self.exit.place_forget()
+        self.shutdown.place_forget()
 
     def set_average(self, number):
         
@@ -335,5 +331,10 @@ class Stopwatch:
             if number == 12:
                 self.ao12Label.config(text= "ao12: ") 
                                                                                      
-       
+    def exit(self):
+        quit()
+
+    def shutdown(self):
+        call("sudo nohup shutdown -h now", shell=True)
+ 
 Stopwatch()
