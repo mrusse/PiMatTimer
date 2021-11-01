@@ -53,8 +53,14 @@ class Stopwatch:
         #back button
         self.backButton = tk.Button(self.root,text = 'Back',font = ("Arial 12 bold"),command=self.view_timer)
         self.backButton.pack()
-        self.backButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
+        self.backButton.place(relx = 0.2, rely = 0.92, anchor = 'center') 
         self.backButton.place_forget()
+        
+        #delete selected button
+        self.removeSelected = tk.Button(self.root,text = 'Delete Selected',font = ("Arial 12 bold"),command=self.remove_selected)
+        self.removeSelected.pack()
+        self.removeSelected.place(relx = 0.2, rely = 0.92, anchor = 'center') 
+        self.removeSelected.place_forget()
 
         #get first scramble from file then delete it from the file
         stream = os.popen('head -n 1 scrambles.txt')
@@ -222,8 +228,9 @@ class Stopwatch:
 
         self.solvesList.pack(side = tk.LEFT,anchor = tk.NW,fill = tk.X)
         self.scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
-        self.backButton.place(relx = 0.5, rely = 0.92, anchor = 'center')
+        self.backButton.place(relx = 0.2, rely = 0.92, anchor = 'center')
         self.ao5Label.place(relx = 0.5, rely = 0.65, anchor = 'center')
+        self.removeSelected.place(relx = 0.7, rely = 0.92, anchor = 'center') 
 
         self.solvesList.delete(0,tk.END)
 
@@ -256,6 +263,26 @@ class Stopwatch:
         self.infoButton.place_forget() 
         self.display.place_forget()
 
+    def remove_selected(self):
+        
+        selection = self.solvesList.curselection()
+        selectedArray = self.solvesList.get(selection[0]).split(") ") 
+
+        if not (len(selectedArray) > 1):
+            return
+
+        if isinstance(float(selectedArray[1].rstrip()),float):
+            self.solvesList.delete(selection[0],selection[0]+2)
+            
+            lineToDelete = selectedArray[0].strip()
+            deleteString = "sed -i '{0}d' solves.txt".format(lineToDelete)
+            os.system(deleteString)
+            print("Deleted solve #" + lineToDelete + ": " +selectedArray[1])
+
+            self.set_average(5)
+            self.set_average(12)
+            self.view_solves()
+
     def view_timer(self):
         self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
@@ -266,6 +293,7 @@ class Stopwatch:
         self.backButton.place_forget()
         self.solvesList.pack_forget()
         self.scrollbar.pack_forget()
+        self.removeSelected.place_forget()
 
     def set_average(self, number):
         
