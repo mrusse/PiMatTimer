@@ -6,7 +6,9 @@ import random
 import sys
 import os
 import logging
+import _thread
 from subprocess import call
+from pyTwistyScrambler.pyTwistyScrambler import scrambler333
 
 class Stopwatch:
     
@@ -55,11 +57,12 @@ class Stopwatch:
         #shutdown button
         self.shutdown = tk.Button(self.root,text = 'Shutdown',font = ("Arial 12 bold"),command=self.shutdown)  
 
-        #get first scramble from file then delete it from the file
+        #get first scramble from file then delete it from the file then generate new scramble in a new thread
         stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles.txt')
         scramblestr = stream.read() 
         os.system('tail -n +2 "/home/pi/CubeTimer/scrambles.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles.txt"')       
-       
+        _thread.start_new_thread(self.scramble3,())
+              
         #fill up listbox and get average
         if os.path.isfile("/home/pi/CubeTimer/solves.txt"):
             solveFile = open("/home/pi/CubeTimer/solves.txt")
@@ -177,7 +180,10 @@ class Stopwatch:
                 self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
 
                 os.system('tail -n +2 "/home/pi/CubeTimer/scrambles.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles.txt"')       
- 
+                _thread.start_new_thread(self.scramble3, ())
+                #os.system('cd /home/pi/pyTwistyScrambler; python3 3x3.py;')
+       
+
                 self.button1.wait_for_release()
                 self.button2.wait_for_release()
 
@@ -219,7 +225,7 @@ class Stopwatch:
     def view_solves(self):
 
         self.solvesList.pack(side = tk.LEFT,anchor = tk.NW,fill = tk.X)
-        self.scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
+        self.scrollbar.pack(side = tk.RIGHT, fill = tk.BOTH)
         self.backButton.place(relx = 0.11, rely = 0.92, anchor = 'center')
         self.ao5Label.place(relx = 0.5, rely = 0.65, anchor = 'center')
         self.removeSelected.place(relx = 0.35, rely = 0.92, anchor = 'center') 
@@ -265,17 +271,21 @@ class Stopwatch:
         if not (len(selectedArray) > 1):
             return
 
-        if isinstance(float(selectedArray[1].rstrip()),float):
-            self.solvesList.delete(selection[0],selection[0]+2)
+        if ":" in selectedArray[1]:
+            selectedArray[1].replace(':','')
             
-            lineToDelete = selectedArray[0].strip()
-            deleteString = "sed -i '{0}d' /home/pi/CubeTimer/solves.txt".format(lineToDelete)
-            os.system(deleteString)
-            print("Deleted solve #" + lineToDelete + ": " +selectedArray[1])
+        #if isinstance(float(selectedArray[1].rstrip()),float):
+        self.solvesList.delete(selection[0],selection[0]+2)
+            
+        lineToDelete = selectedArray[0].strip()
+        deleteString = "sed -i '{0}d' /home/pi/CubeTimer/solves.txt".format(lineToDelete)
+        os.system(deleteString)
+        print("Deleted solve #" + lineToDelete + ": " +selectedArray[1])
 
-            self.set_average(5)
-            self.set_average(12)
-            self.view_solves()
+        self.set_average(5)
+        self.set_average(12)
+        self.view_solves()
+        self.solvesList.see(selection[0])
 
     def view_timer(self):
         self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
@@ -298,27 +308,31 @@ class Stopwatch:
             aoArray = []
 
             for i in range(0,number*3,3):
-                aoArray.append(self.solvesList.get(i).split(") ")[1]) 
-                #print(i)                   
-            
+                if ":" in self.solvesList.get(i).split(") ")[1]:
+                    minute = self.solvesList.get(i).split(") ")[1].split(":")
+                    secondsToAdd = float(float(minute[0]) * 60)
+                    aoArray.append(float(float(minute[1]) + secondsToAdd))
+                else:
+                    aoArray.append(float(self.solvesList.get(i).split(") ")[1])) 
+                                               
             #for k in range(number):
                 #print(aoArray[k])                
-
-            top = float(aoArray[0])
-            bot = float(aoArray[0])
+ 
+            top = aoArray[0]
+            bot = aoArray[0]
             total = 0
 
             #print(len(aoArray))
                     
             for j in range(number):
-                if float(aoArray[j]) > top:
-                    top = float(aoArray[j])
-                if float(aoArray[j]) < bot:
-                    bot = float(aoArray[j])
+                if aoArray[j] > top:
+                    top = aoArray[j]
+                if aoArray[j] < bot:
+                    bot = aoArray[j]
                     
             for j in range(number):
-                if not float(aoArray[j]) == top and not float(aoArray[j]) == bot:
-                    total += float(aoArray[j])
+                if not aoArray[j] == top and not aoArray[j] == bot:
+                    total += aoArray[j]
                     
             average = '%.2f' % (total / (number - 2))
             if number == 5:
@@ -330,6 +344,12 @@ class Stopwatch:
                 self.ao5Label.config(text= "ao5: ") 
             if number == 12:
                 self.ao12Label.config(text= "ao12: ") 
+
+    def scramble3(self):
+        with open("/home/pi/CubeTimer/scrambles.txt","a") as scrambleFile:
+            print("Generating new 3x3 scramble")
+            scrambleFile.write(scrambler333.get_WCA_scramble() + os.linesep)
+            print("Generation complete")
                                                                                      
     def exit(self):
         quit()
