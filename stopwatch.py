@@ -17,7 +17,7 @@ class Stopwatch:
         self.root = tk.Tk()
         self.root.title('CubeTimer')
         self.root.attributes('-fullscreen', True)
-        self.root.config(cursor="none") 
+        self.root.config(cursor="none",bg = "#BFBFBF") 
 
         self.lastScramble = ""
         logging.basicConfig(filename="/home/pi/CubeTimer/solves.txt",format='%(message)s',filemode='a')
@@ -25,8 +25,27 @@ class Stopwatch:
         self.logger.setLevel(logging.DEBUG)  
 
         #timer label
-        self.display = tk.Label(self.root, text='0.00', font = ("Arial Bold", 50))
+        self.display = tk.Label(self.root,bg = "#BFBFBF" ,text='0.00', font = ("Arial Bold", 50))
         self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
+        
+        #settings button 
+        settingImage = tk.PhotoImage(file = "/home/pi/CubeTimer/settingsicon.gif")
+        
+        self.settingsButton= tk.Button(self.root,highlightthickness = 0,text = 'Back',image = settingImage,font = ("Arial 12 bold"),command=self.view_settings)
+        self.settingsButton.place(relx = 0.9, rely = 0.92, anchor = 'center')
+
+        #logo label
+        logoImage = tk.PhotoImage(file = "/home/pi/CubeTimer/logo.gif")
+        self.logo = tk.Label(self.root,bg = "#BFBFBF" ,image = logoImage)
+        
+        #cube dropdown
+        self.cubeList = ["3x3x3", "2x2x2" , "4x4x4" , "5x5x5" , "6x6x6" , "7x7x7"]
+        self.selectedCube = tk.StringVar(self.root)
+        self.selectedCube.set("3x3x3")
+ 
+        self.dropdownLabel = tk.Label(self.root,bg = "#BFBFBF" ,font = ("Arial 13 bold"),text = "Select puzzle type")
+
+        self.cubeDropdown = tk.OptionMenu(self.root,self.selectedCube, *self.cubeList)
 
         #listbox and scrollbar
         self.scrollbar = tk.Scrollbar(self.root)
@@ -34,22 +53,22 @@ class Stopwatch:
         self.scrollbar.config(command = self.solvesList.yview)       
 
         #ao5 label
-        self.ao5Label = tk.Label(self.root, text='ao5: ', font = ("Arial 13 bold"))
+        self.ao5Label = tk.Label(self.root, bg = "#BFBFBF",text='ao5: ', font = ("Arial 13 bold"))
         self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
 
         #ao12 label
-        self.ao12Label = tk.Label(self.root, text='ao12: ', font = ("Arial 13 bold")) 
+        self.ao12Label = tk.Label(self.root,bg = "#BFBFBF" ,text='ao12: ', font = ("Arial 13 bold")) 
         self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
         
         #view solves button
-        self.infoButton = tk.Button(self.root,text = 'View Solves',width= 40,font = ("Arial 12 bold"),command=self.view_solves)
+        self.infoButton = tk.Button(self.root,text = '   View Solves',highlightthickness = 0,width= 30,font = ("Arial 12 bold"),command=self.view_solves)
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
 
         #back button
         self.backButton = tk.Button(self.root,text = 'Back',font = ("Arial 12 bold"),command=self.view_timer)  
         
         #delete selected button
-        self.removeSelected = tk.Button(self.root,text = 'Delete',font = ("Arial 12 bold"),command=self.remove_selected)  
+        self.removeSelected = tk.Button(self.root,text = 'Delete Selected Time',font = ("Arial 12 bold"),command=self.remove_selected)  
         
         #exit button
         self.exit = tk.Button(self.root,text = 'Exit',font = ("Arial 12 bold"),command=self.exit)  
@@ -101,7 +120,7 @@ class Stopwatch:
         else:
             scramblestr = scramblestr[:middle - 1] +  "\n" + scramblestr[middle -1 :]
 
-        self.scramble = tk.Label(self.root, text= scramblestr, font = ("Arial 14 bold")) 
+        self.scramble = tk.Label(self.root,bg = "#BFBFBF", text= scramblestr, font = ("Arial 14 bold")) 
         self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
 
         #GPIO pins 19 and 26
@@ -110,7 +129,7 @@ class Stopwatch:
  
         self.paused = True
 
-        self.checkInput()  
+        self.check_input()  
         self.root.mainloop()
         
 
@@ -147,7 +166,7 @@ class Stopwatch:
         
         self.display.after(10, self.run_timer)
 
-    def checkInput(self):
+    def check_input(self):
 
         if self.button1.is_pressed and self.button2.is_pressed:
 
@@ -220,18 +239,15 @@ class Stopwatch:
                 self.display.config(foreground = "black")
                 self.toggle()
 
-        self.display.after(10,self.checkInput)
+        self.display.after(10,self.check_input)
 
     def view_solves(self):
 
         self.solvesList.pack(side = tk.LEFT,anchor = tk.NW,fill = tk.X)
         self.scrollbar.pack(side = tk.RIGHT, fill = tk.BOTH)
-        self.backButton.place(relx = 0.11, rely = 0.92, anchor = 'center')
-        self.ao5Label.place(relx = 0.5, rely = 0.65, anchor = 'center')
-        self.removeSelected.place(relx = 0.35, rely = 0.92, anchor = 'center') 
-        self.exit.place(relx = 0.57, rely = 0.92, anchor = 'center') 
-        self.shutdown.place(relx = 0.83, rely = 0.92, anchor = 'center')
-
+        self.backButton.place(relx = 0.2, rely = 0.92, anchor = 'center')
+        self.removeSelected.place(relx = 0.65, rely = 0.92, anchor = 'center') 
+        
         self.solvesList.delete(0,tk.END)
 
         if os.path.isfile("/home/pi/CubeTimer/solves.txt"):
@@ -262,6 +278,42 @@ class Stopwatch:
         self.scramble.place_forget()
         self.infoButton.place_forget() 
         self.display.place_forget()
+        self.settingsButton.place_forget()
+
+    def view_timer(self):
+        self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
+        self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
+        self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
+        self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
+        self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
+        self.settingsButton.place(relx = 0.9, rely = 0.92, anchor = 'center')
+
+        print(self.selectedCube.get())
+
+        self.backButton.place_forget()
+        self.solvesList.pack_forget()
+        self.scrollbar.pack_forget()
+        self.removeSelected.place_forget()
+        self.exit.place_forget()
+        self.shutdown.place_forget()
+        self.cubeDropdown.place_forget()
+        self.logo.place_forget()
+        self.dropdownLabel.place_forget()
+ 
+    def view_settings(self):
+        self.exit.place(relx = 0.48, rely = 0.92, anchor = 'center') 
+        self.shutdown.place(relx = 0.71, rely = 0.92, anchor = 'center')
+        self.backButton.place(relx = 0.28, rely = 0.92, anchor = 'center')
+        self.cubeDropdown.place(relx = 0.69, rely = 0.38, anchor = 'center')
+        self.logo.place(relx = 0.3, rely = 0.4, anchor = 'center')
+        self.dropdownLabel.place(relx = 0.76, rely = 0.24, anchor = 'center')
+
+        self.ao5Label.place_forget()
+        self.ao12Label.place_forget()
+        self.scramble.place_forget()
+        self.infoButton.place_forget() 
+        self.display.place_forget()
+        self.settingsButton.place_forget()
 
     def remove_selected(self):
         
@@ -287,20 +339,7 @@ class Stopwatch:
         self.view_solves()
         self.solvesList.see(selection[0])
 
-    def view_timer(self):
-        self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
-        self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
-        self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
-        self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
-        self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
-
-        self.backButton.place_forget()
-        self.solvesList.pack_forget()
-        self.scrollbar.pack_forget()
-        self.removeSelected.place_forget()
-        self.exit.place_forget()
-        self.shutdown.place_forget()
-
+    
     def set_average(self, number):
         
         if self.solvesList.size() >= ((number*3) - 1):
