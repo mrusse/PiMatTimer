@@ -8,7 +8,7 @@ import os
 import logging
 import _thread
 from subprocess import call
-from pyTwistyScrambler.pyTwistyScrambler import scrambler333
+from pyTwistyScrambler.pyTwistyScrambler import scrambler333, scrambler444
 
 class Stopwatch:
     
@@ -77,9 +77,9 @@ class Stopwatch:
         self.shutdown = tk.Button(self.root,text = 'Shutdown',font = ("Arial 12 bold"),command=self.shutdown)  
 
         #get first scramble from file then delete it from the file then generate new scramble in a new thread
-        stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles.txt')
+        stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles333.txt')
         scramblestr = stream.read() 
-        os.system('tail -n +2 "/home/pi/CubeTimer/scrambles.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles.txt"')       
+        os.system('tail -n +2 "/home/pi/CubeTimer/scrambles333.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles333.txt"')       
         _thread.start_new_thread(self.scramble3,())
               
         #fill up listbox and get average
@@ -197,9 +197,11 @@ class Stopwatch:
                 self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
                 self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
                 self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
+                self.settingsButton.place(relx = 0.9, rely = 0.92, anchor = 'center')
 
-                os.system('tail -n +2 "/home/pi/CubeTimer/scrambles.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles.txt"')       
-                _thread.start_new_thread(self.scramble3, ())
+
+                #os.system('tail -n +2 "/home/pi/CubeTimer/scrambles333.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles333.txt"')       
+                #_thread.start_new_thread(self.scramble3, ())
                 #os.system('cd /home/pi/pyTwistyScrambler; python3 3x3.py;')
        
 
@@ -214,6 +216,7 @@ class Stopwatch:
                 self.scramble.place_forget()
                 self.ao5Label.place_forget()
                 self.ao12Label.place_forget()
+                self.settingsButton.place_forget()
 
                 self.lastScramble = self.scramble.cget("text")
                 self.display.update_idletasks() 
@@ -221,20 +224,10 @@ class Stopwatch:
                 self.button1.wait_for_release()
                 self.button2.wait_for_release()
 
-                stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles.txt')
-                scramblestr = stream.read()
-              
-                #split scramble in half and put second half on new line to increase readability 
-                middle = int(len(scramblestr)/2)
+                #if 3x3
+                #if 4x4
 
-                if scramblestr[middle] == " ":
-                    scramblestr = scramblestr[:middle] +  "\n" + scramblestr[middle:]
-                elif scramblestr[middle + 1] == " ":
-                    scramblestr = scramblestr[:middle + 1] +  "\n" + scramblestr[middle + 1:]
-                else:
-                    scramblestr = scramblestr[:middle - 1] +  "\n" + scramblestr[middle -1 :]
- 
-                self.scramble.config(text = scramblestr)
+                self.get_scramble()
 
                 self.display.config(foreground = "black")
                 self.toggle()
@@ -281,14 +274,16 @@ class Stopwatch:
         self.settingsButton.place_forget()
 
     def view_timer(self):
-        self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
+        self.scramble.place(relx = 0.5, rely = 0.23, anchor = 'center')
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
         self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
         self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
         self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
         self.settingsButton.place(relx = 0.9, rely = 0.92, anchor = 'center')
-
-        print(self.selectedCube.get())
+ 
+        if self.logo.winfo_ismapped():
+            self.get_scramble()
+            print(self.selectedCube.get())
 
         self.backButton.place_forget()
         self.solvesList.pack_forget()
@@ -384,12 +379,75 @@ class Stopwatch:
             if number == 12:
                 self.ao12Label.config(text= "ao12: ") 
 
+    def get_scramble(self):
+
+        if self.selectedCube.get() == "3x3x3":
+            stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles333.txt')
+            os.system('tail -n +2 "/home/pi/CubeTimer/scrambles333.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles333.txt"')       
+            _thread.start_new_thread(self.scramble3, ())
+            scramblestr = stream.read()
+              
+            #split scramble in half and put second half on new line to increase readability 
+            middle = int(len(scramblestr)/2)
+
+            if scramblestr[middle] == " ":
+                scramblestr = scramblestr[:middle] +  "\n" + scramblestr[middle:]
+            elif scramblestr[middle + 1] == " ":
+                scramblestr = scramblestr[:middle + 1] +  "\n" + scramblestr[middle + 1:]
+            else:
+                scramblestr = scramblestr[:middle - 1] +  "\n" + scramblestr[middle -1 :]
+ 
+            self.scramble.config(text = scramblestr)
+
+        if self.selectedCube.get() == "4x4x4":
+            stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles444.txt')
+            os.system('tail -n +2 "/home/pi/CubeTimer/scrambles444.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles444.txt"')       
+            _thread.start_new_thread(self.scramble4, ())
+            scramblestr = stream.read()
+            print(scramblestr)  
+            #split scramble in thirds 
+            third = int(len(scramblestr)/3)
+
+            #first third
+            if scramblestr[third] == " ":
+                scramblestr = scramblestr[:third] +  "\n" + scramblestr[third:]
+            elif scramblestr[third + 1] == " ":
+                scramblestr = scramblestr[:third + 1] +  "\n" + scramblestr[third + 1:]
+            elif scramblestr[third - 1] == " ":
+                scramblestr = scramblestr[:third - 1] +  "\n" + scramblestr[third - 1:]
+            elif scramblestr[third + 2] == " ":
+                scramblestr = scramblestr[:third + 2] +  "\n" + scramblestr[third + 2:]
+            else:
+                scramblestr = scramblestr[:third - 2] +  "\n" + scramblestr[third - 2:]
+            
+            #last third
+            if scramblestr[third*2] == " ":
+                scramblestr = scramblestr[:third*2] +  "\n" + scramblestr[third*2:]
+            elif scramblestr[third*2 + 1] == " ":
+                scramblestr = scramblestr[:third*2 + 1] +  "\n" + scramblestr[third*2 + 1:]
+            elif scramblestr[third*2 - 1] == " ":
+                scramblestr = scramblestr[:third*2 - 1] +  "\n" + scramblestr[third*2 -1 :]
+            elif scramblestr[third*2 + 2] == " ":
+                scramblestr = scramblestr[:third*2 + 2] +  "\n" + scramblestr[third*2 + 2:]
+            else:
+                scramblestr = scramblestr[:third*2 - 2] +  "\n" + scramblestr[third*2 - 2:]            
+           
+            print(scramblestr)  
+            self.scramble.config(text = scramblestr)
+
     def scramble3(self):
-        with open("/home/pi/CubeTimer/scrambles.txt","a") as scrambleFile:
+
+        with open("/home/pi/CubeTimer/scrambles333.txt","a") as scrambleFile:
             print("Generating new 3x3 scramble")
             scrambleFile.write(scrambler333.get_WCA_scramble() + os.linesep)
             print("Generation complete")
-                                                                                     
+    
+    def scramble4(self):
+        with open("/home/pi/CubeTimer/scrambles444.txt","a") as scrambleFile:
+            print("Generating new 4x4 scramble")
+            scrambleFile.write(scrambler444.get_WCA_scramble() + os.linesep)
+            print("Generation complete")                                                                                
+    
     def exit(self):
         quit()
 
