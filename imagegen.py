@@ -1,5 +1,8 @@
+from PIL import Image, ImageColor
+
 cube = ["WWWWWWWWW","OOOOOOOOO","GGGGGGGGG","RRRRRRRRR","BBBBBBBBB","YYYYYYYYY"]
 
+     
 def rotate(face):
     tempcorner = face[6]
     tempedge = face[3]
@@ -139,6 +142,8 @@ def move(turn):
             cube[4] = rotate(cube[4])
 
 def draw(cube):
+    img = Image.new('RGB', (12, 9), color = 'black')
+
     textimage = [[ " ", " ", " ", cube[0][0], cube[0][1], cube[0][2], " ", " ", " ", " ", " ", " "], \
                  [ " ", " ", " ", cube[0][3], cube[0][4], cube[0][5], " ", " ", " ", " ", " ", " "], \
                  [ " ", " ", " ", cube[0][6], cube[0][7], cube[0][8], " ", " ", " ", " ", " ", " "], \
@@ -149,9 +154,29 @@ def draw(cube):
                  [ " ", " ", " ", cube[5][3], cube[5][4], cube[5][5], " ", " ", " ", " ", " ", " "], \
                  [ " ", " ", " ", cube[5][6], cube[5][7], cube[5][8], " ", " ", " ", " ", " ", " "]]
     for i in range(9):
+        for j in range(12):
+            if textimage[i][j] == "W":
+                color = ImageColor.getrgb("white")
+                img.putpixel((j,i), color) 
+            if textimage[i][j] == "Y":
+                color = ImageColor.getrgb("yellow")
+                img.putpixel((j,i), color) 
+            if textimage[i][j] == "R":
+                color = ImageColor.getrgb("red")
+                img.putpixel((j,i), color) 
+            if textimage[i][j] == "O":
+                color = ImageColor.getrgb("orange")
+                img.putpixel((j,i), color) 
+            if textimage[i][j] == "B":
+                color = ImageColor.getrgb("blue")
+                img.putpixel((j,i), color) 
+            if textimage[i][j] == "G":
+                color = ImageColor.getrgb("green")
+                img.putpixel((j,i), color) 
         print(textimage[i])
+    img.save('cube.png')
 
-scramble = "B" 
+scramble = "B F U2 D'" 
 splitScramble = scramble.split()
 
 for i in range(len(splitScramble)):
