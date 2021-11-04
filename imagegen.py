@@ -77,9 +77,66 @@ def move(turn):
             
             cube[2] = rotate(cube[2])
 
+    #D FACE
+    if turn == "D" or turn == "D2" or turn == "D'":
+        
+        if turn == "D'":
+            num = 1
+        elif turn == "D2":
+            num = 2
+        else:
+            num = 3
 
+        for i in range(num):
 
+            temp = cube[1][6] + cube[1][7] + cube[1][8]
 
+            for i in range(1,4):
+                cube[i] = cube[i][:6] + cube[i+1][6] + cube[i][7:]
+                cube[i] = cube[i][:7] + cube[i+1][7] + cube[i][8:]
+                cube[i] = cube[i][:8] + cube[i+1][8] + cube[i][9:]
+
+            cube[4] = cube[4][:6] + temp[0] + cube[4][7:]
+            cube[4] = cube[4][:7] + temp[1] + cube[4][8:]
+            cube[4] = cube[4][:8] + temp[2] + cube[4][9:]
+    
+            cube[5] = rotate(cube[5])
+
+    #B FACE
+    if turn == "B" or turn == "B2" or turn == "B'":
+        
+        if turn == "B'":
+            num = 1
+        elif turn == "B2":
+            num = 2
+        else:
+            num = 3
+
+        for i in range(num):
+
+            temp = cube[0][0] + cube[0][1] + cube[0][2]
+            
+            #white
+            cube[0] = cube[0][:0] + cube[1][6] + cube[0][1:]
+            cube[0] = cube[0][:1] + cube[1][3] + cube[0][2:]
+            cube[0] = cube[0][:2] + cube[1][0] + cube[0][3:]
+
+            #orange
+            cube[1] = cube[1][:0] + cube[5][6] + cube[1][1:]
+            cube[1] = cube[1][:3] + cube[5][7] + cube[1][4:]
+            cube[1] = cube[1][:6] + cube[5][8] + cube[1][7:]
+    
+            #yellow
+            cube[5] = cube[5][:6] + cube[3][8] + cube[5][7:]
+            cube[5] = cube[5][:7] + cube[3][5] + cube[5][8:]
+            cube[5] = cube[5][:8] + cube[3][2] + cube[5][9:]
+    
+            #red
+            cube[3] = cube[3][:2] + temp[0] + cube[3][3:]
+            cube[3] = cube[3][:5] + temp[1] + cube[3][6:]
+            cube[3] = cube[3][:8] + temp[2] + cube[3][9:]
+            
+            cube[4] = rotate(cube[4])
 
 def draw(cube):
     textimage = [[ " ", " ", " ", cube[0][0], cube[0][1], cube[0][2], " ", " ", " ", " ", " ", " "], \
@@ -94,16 +151,10 @@ def draw(cube):
     for i in range(9):
         print(textimage[i])
 
-scramble = "" 
+scramble = "B" 
+splitScramble = scramble.split()
 
-draw(cube)
-move("U'")
-draw(cube)
-move("F")
-draw(cube)
-move("U'")
-draw(cube)
-move("F'")
-draw(cube)
-move("U2")
-draw(cube)
+for i in range(len(splitScramble)):
+    move(splitScramble[i])
+    draw(cube)
+
