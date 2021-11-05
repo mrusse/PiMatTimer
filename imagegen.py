@@ -246,7 +246,8 @@ def move(turn):
             cube[3] = rotate(cube[3])
 
 def draw(cube):
-    img = Image.new('RGB', (12, 9), color = 'black')
+    
+    img2 = Image.new('RGB', (120,90), color = 'black')
 
     textimage = [[ " ", " ", " ", cube[0][0], cube[0][1], cube[0][2], " ", " ", " ", " ", " ", " "], \
                  [ " ", " ", " ", cube[0][3], cube[0][4], cube[0][5], " ", " ", " ", " ", " ", " "], \
@@ -257,28 +258,42 @@ def draw(cube):
                  [ " ", " ", " ", cube[5][0], cube[5][1], cube[5][2], " ", " ", " ", " ", " ", " "], \
                  [ " ", " ", " ", cube[5][3], cube[5][4], cube[5][5], " ", " ", " ", " ", " ", " "], \
                  [ " ", " ", " ", cube[5][6], cube[5][7], cube[5][8], " ", " ", " ", " ", " ", " "]]
-    for i in range(9):
-        for j in range(12):
-            if textimage[i][j] == "W":
+    for i in range(1,10):
+        for j in range(1,13):
+            if textimage[i-1][j-1] == "W":
                 color = ImageColor.getrgb("white")
-                img.putpixel((j,i), color) 
-            if textimage[i][j] == "Y":
+                print(str(j) + ":" + str(i))
+                for k in range(10):
+                    for l in range(10):
+                        img2.putpixel((((j*10)-10)+k,((i*10)-10)+l), color) 
+            if textimage[i-1][j-1] == "Y":
                 color = ImageColor.getrgb("yellow")
-                img.putpixel((j,i), color) 
-            if textimage[i][j] == "R":
+                for k in range(10): 
+                     for l in range(10):
+                        img2.putpixel((((j*10)-10)+k,((i*10)-10)+l), color)
+            if textimage[i-1][j-1] == "R":
                 color = ImageColor.getrgb("red")
-                img.putpixel((j,i), color) 
-            if textimage[i][j] == "O":
+                for k in range(10):
+                     for l in range(10):
+                        img2.putpixel((((j*10)-10)+k,((i*10)-10)+l), color)
+            if textimage[i-1][j-1] == "O":
                 color = ImageColor.getrgb("orange")
-                img.putpixel((j,i), color) 
-            if textimage[i][j] == "B":
+                for k in range(10):              
+                     for l in range(10):
+                        img2.putpixel((((j*10)-10)+k,((i*10)-10)+l), color)
+            if textimage[i-1][j-1] == "B":
                 color = ImageColor.getrgb("blue")
-                img.putpixel((j,i), color) 
-            if textimage[i][j] == "G":
+                for k in range(10):
+                     for l in range(10):
+                        img2.putpixel((((j*10)-10)+k,((i*10)-10)+l), color)
+            if textimage[i-1][j-1] == "G":
                 color = ImageColor.getrgb("green")
-                img.putpixel((j,i), color) 
-        #print(textimage[i])
-    img.save('cube.png')
+                for k in range(10):
+                     for l in range(10):
+                        img2.putpixel((((j*10)-10)+k,((i*10)-10)+l), color)
+    
+    img2.save('cubelarge.gif')
+
 
 #scramble = "R2 U R' U2 B' L F2 L' B2 F' R D2 U2 R2 B2 R2 B2 L' D' U L' B U2 R' U F' L B' R' U2"
 #scramble = "R B' R2 F D L' R F U R U2 R D' U L R2 D B2 F D' R2 B' F U B2 F2 D2 R' U L"
@@ -292,4 +307,4 @@ for i in range(len(splitScramble)):
     move(splitScramble[i])
     draw(cube)
 
-print("Scrambled image saved in \"cube.png\"")
+print("Scrambled image saved in \"cube.gif\"")
