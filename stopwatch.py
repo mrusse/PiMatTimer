@@ -9,6 +9,7 @@ import logging
 import _thread
 from subprocess import call
 from pyTwistyScrambler.pyTwistyScrambler import scrambler333, scrambler444
+#import imagegen as cubeimage
 
 class Stopwatch:
     
@@ -27,7 +28,7 @@ class Stopwatch:
         #timer label
         self.display = tk.Label(self.root,bg = "#BFBFBF" ,text='0.00', font = ("Arial Bold", 50))
         self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
-        
+               
         #settings button 
         settingImage = tk.PhotoImage(file = "/home/pi/CubeTimer/settingsicon.gif")
         
@@ -81,7 +82,19 @@ class Stopwatch:
         scramblestr = stream.read() 
         os.system('tail -n +2 "/home/pi/CubeTimer/scrambles333.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles333.txt"')       
         _thread.start_new_thread(self.scramble3,())
-              
+        
+        
+        #scrambleimage label
+
+        command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + scramblestr + "\""
+        os.system(command)        
+
+        self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
+        #os.remove("cubeimage.gif")
+        self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
+        self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+    
+      
         #fill up listbox and get average
         if os.path.isfile("/home/pi/CubeTimer/solves.txt"):
             solveFile = open("/home/pi/CubeTimer/solves.txt")
@@ -181,7 +194,6 @@ class Stopwatch:
                 solveStr = lastTime + " - " + self.lastScramble.replace("\n", "") 
                 self.logger.info(solveStr) 
                 print(solveStr)
-
                 self.solvesList.insert(0, ") " + lastTime) 
                 self.solvesList.insert(1,self.lastScramble.replace("\n", ""))
                 self.solvesList.insert(2," ")
@@ -193,21 +205,25 @@ class Stopwatch:
 
                 self.display.update_idletasks()
 
+                scramblestr = self.scramble.cget("text").replace("\n","")
+
+                self.scrambleImage.destroy()
+
+                self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
+                #os.remove("cubeimage.gif")
+                self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
+                self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+                   
                 self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
                 self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
                 self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
                 self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
-                self.settingsButton.place(relx = 0.9, rely = 0.92, anchor = 'center')
-
-
-                #os.system('tail -n +2 "/home/pi/CubeTimer/scrambles333.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles333.txt"')       
-                #_thread.start_new_thread(self.scramble3, ())
-                #os.system('cd /home/pi/pyTwistyScrambler; python3 3x3.py;')
-       
-
+                self.settingsButton.place(relx = 0.9, rely = 0.92, anchor = 'center') 
+                
+               
                 self.button1.wait_for_release()
-                self.button2.wait_for_release()
-
+                self.button2.wait_for_release() 
+                
                 self.display.config(foreground = "black")
 
             else:
@@ -217,20 +233,20 @@ class Stopwatch:
                 self.ao5Label.place_forget()
                 self.ao12Label.place_forget()
                 self.settingsButton.place_forget()
-
+                self.scrambleImage.place_forget()
+                #self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/empty.gif")   
+ 
                 self.lastScramble = self.scramble.cget("text")
                 self.display.update_idletasks() 
 
                 self.button1.wait_for_release()
                 self.button2.wait_for_release()
 
-                #if 3x3
-                #if 4x4
-
                 self.get_scramble()
-
                 self.display.config(foreground = "black")
                 self.toggle()
+                #self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/empty.gif")   
+ 
 
         self.display.after(10,self.check_input)
 
@@ -272,9 +288,10 @@ class Stopwatch:
         self.infoButton.place_forget() 
         self.display.place_forget()
         self.settingsButton.place_forget()
+        self.scrambleImage.place_forget()
 
     def view_timer(self):
-        self.scramble.place(relx = 0.5, rely = 0.23, anchor = 'center')
+        self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
         self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
         self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
         self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
@@ -309,6 +326,7 @@ class Stopwatch:
         self.infoButton.place_forget() 
         self.display.place_forget()
         self.settingsButton.place_forget()
+        self.scrambleImage.place_forget()
 
     def remove_selected(self):
         
@@ -386,7 +404,15 @@ class Stopwatch:
             os.system('tail -n +2 "/home/pi/CubeTimer/scrambles333.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles333.txt"')       
             _thread.start_new_thread(self.scramble3, ())
             scramblestr = stream.read()
-              
+
+#            if os.path.exists("/home/pi/CubeTimer/cube.gif"):
+ #               os.remove("/home/pi/CubeTimer/cube.gif")
+ 
+            
+            command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + scramblestr + "\""
+            _thread.start_new_thread(os.system,(command,))        
+ 
+
             #split scramble in half and put second half on new line to increase readability 
             middle = int(len(scramblestr)/2)
 

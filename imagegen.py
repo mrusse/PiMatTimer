@@ -1,4 +1,5 @@
 from PIL import Image, ImageColor
+import sys
 
 cube = [["W","W","W","W","W","W","W","W","W"],\
         ["O","O","O","O","O","O","O","O","O"],\
@@ -7,7 +8,8 @@ cube = [["W","W","W","W","W","W","W","W","W"],\
         ["B","B","B","B","B","B","B","B","B"],\
         ["Y","Y","Y","Y","Y","Y","Y","Y","Y"]]
 
-     
+scramble = str(sys.argv[1])
+print(scramble) 
 def rotate(face):
     
     tempcorner = face[6]
@@ -247,7 +249,7 @@ def move(turn):
 
 def draw(cube):
     
-    img2 = Image.new('RGB', (120,90), color = 'black')
+    img2 = Image.new('RGB', (120,90), color = (191,191,191))
 
     textimage = [[ " ", " ", " ", cube[0][0], cube[0][1], cube[0][2], " ", " ", " ", " ", " ", " "], \
                  [ " ", " ", " ", cube[0][3], cube[0][4], cube[0][5], " ", " ", " ", " ", " ", " "], \
@@ -262,7 +264,7 @@ def draw(cube):
         for j in range(1,13):
             if textimage[i-1][j-1] == "W":
                 color = ImageColor.getrgb("white")
-                print(str(j) + ":" + str(i))
+                #print(str(j) + ":" + str(i))
                 for k in range(10):
                     for l in range(10):
                         img2.putpixel((((j*10)-10)+k,((i*10)-10)+l), color) 
@@ -299,7 +301,7 @@ def draw(cube):
 #scramble = "R B' R2 F D L' R F U R U2 R D' U L R2 D B2 F D' R2 B' F U B2 F2 D2 R' U L"
 
 
-scramble = input("Enter your scramble:") 
+#scramble = input("Enter your scramble:") 
 
 splitScramble = scramble.split()
 
