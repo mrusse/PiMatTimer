@@ -222,11 +222,12 @@ class Stopwatch:
                 self.infoButton.place(relx = 0.24, rely = 0.92, anchor = 'center') 
                 self.settingsButton.place(relx = 0.09, rely = 0.92, anchor = 'center') 
                 
-                if self.selectedCube.get() == "4x4x4": 
+                if self.selectedCube.get() == "4x4x4" or self.selectedCube.get() == "5x5x5": 
                     self.scramble.place(relx = 0.5, rely = 0.16, anchor = 'center')
                 if self.selectedCube.get() == "3x3x3" or self.selectedCube.get() == "2x2x2":
                     self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')       
-               
+                if self.selectedCube.get() == "7x7x7":
+                    self.scramble.place(relx = 0.5, rely = 0.18, anchor = 'center')      
                 self.button1.wait_for_release()
                 self.button2.wait_for_release() 
                 
@@ -297,8 +298,10 @@ class Stopwatch:
         self.scrambleImage.place_forget()
 
     def view_timer(self):
-        if self.selectedCube.get() == "4x4x4": 
+        if self.selectedCube.get() == "4x4x4" or self.selectedCube.get() == "5x5x5": 
             self.scramble.place(relx = 0.5, rely = 0.16, anchor = 'center')
+        if self.selectedCube.get() == "7x7x7":
+            self.scramble.place(relx = 0.5, rely = 0.18, anchor = 'center')
         if self.selectedCube.get() == "3x3x3" or self.selectedCube.get() == "2x2x2":
             self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
         self.infoButton.place(relx = 0.25, rely = 0.92, anchor = 'center') 
@@ -448,7 +451,7 @@ class Stopwatch:
             else:
                 scramblestr = scramblestr[:middle - 1] +  "\n" + scramblestr[middle -1 :]
  
-            self.scramble.config(text = scramblestr)
+            self.scramble.config(text = scramblestr,font = ("Arial 14 bold"))
 
         if self.selectedCube.get() == "4x4x4":
             stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles444.txt')
@@ -484,14 +487,138 @@ class Stopwatch:
                 scramblestr = scramblestr[:third*2 - 2] +  "\n" + scramblestr[third*2 - 2:]            
            
             print(scramblestr)  
-            self.scramble.config(text = scramblestr)
+            self.scramble.config(text = scramblestr,font = ("Arial 14 bold"))
 
         if self.selectedCube.get() == "2x2x2":
             stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles222.txt')
             os.system('tail -n +2 "/home/pi/CubeTimer/scrambles222.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles222.txt"')       
             _thread.start_new_thread(self.scramble2, ())
             scramblestr = stream.read()
-            self.scramble.config(text = scramblestr)
+            self.scramble.config(text = scramblestr,font = ("Arial 14 bold"))
+        
+        if self.selectedCube.get() == "5x5x5":
+            stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles555.txt')
+            os.system('tail -n +2 "/home/pi/CubeTimer/scrambles555.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles555.txt"')       
+            _thread.start_new_thread(self.scramble5, ())
+            scramblestr = stream.read()
+            print(scramblestr)  
+            #split scramble in thirds 
+            third = int(len(scramblestr)/4)
+
+            #first third
+            if scramblestr[third] == " ":
+                scramblestr = scramblestr[:third] +  "\n" + scramblestr[third:]
+            elif scramblestr[third + 1] == " ":
+                scramblestr = scramblestr[:third + 1] +  "\n" + scramblestr[third + 1:]
+            elif scramblestr[third - 1] == " ":
+                scramblestr = scramblestr[:third - 1] +  "\n" + scramblestr[third - 1:]
+            elif scramblestr[third + 2] == " ":
+                scramblestr = scramblestr[:third + 2] +  "\n" + scramblestr[third + 2:]
+            else:
+                scramblestr = scramblestr[:third - 2] +  "\n" + scramblestr[third - 2:]
+            
+            #last third
+            if scramblestr[third*2] == " ":
+                scramblestr = scramblestr[:third*2] +  "\n" + scramblestr[third*2:]
+            elif scramblestr[third*2 + 1] == " ":
+                scramblestr = scramblestr[:third*2 + 1] +  "\n" + scramblestr[third*2 + 1:]
+            elif scramblestr[third*2 - 1] == " ":
+                scramblestr = scramblestr[:third*2 - 1] +  "\n" + scramblestr[third*2 -1 :]
+            elif scramblestr[third*2 + 2] == " ":
+                scramblestr = scramblestr[:third*2 + 2] +  "\n" + scramblestr[third*2 + 2:]
+            else:
+                scramblestr = scramblestr[:third*2 - 2] +  "\n" + scramblestr[third*2 - 2:]            
+            
+            #last third
+            if scramblestr[third*3] == " ":
+                scramblestr = scramblestr[:third*3] +  "\n" + scramblestr[third*3:]
+            elif scramblestr[third*3 + 1] == " ":
+                scramblestr = scramblestr[:third*3 + 1] +  "\n" + scramblestr[third*3 + 1:]
+            elif scramblestr[third*3 - 1] == " ":
+                scramblestr = scramblestr[:third*3 - 1] +  "\n" + scramblestr[third*3 -1 :]
+            elif scramblestr[third*3 + 2] == " ":
+                scramblestr = scramblestr[:third*3 + 2] +  "\n" + scramblestr[third*3 + 2:]
+            else:
+                scramblestr = scramblestr[:third*3 - 2] +  "\n" + scramblestr[third*3 - 2:]            
+            
+
+
+            print(scramblestr)  
+            self.scramble.config(text = scramblestr,font = ("Arial 12 bold"))
+    
+        if self.selectedCube.get() == "7x7x7":
+            stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles777.txt')
+            os.system('tail -n +2 "/home/pi/CubeTimer/scrambles777.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles777.txt"')       
+            _thread.start_new_thread(self.scramble5, ())
+            scramblestr = stream.read()
+            print(scramblestr)  
+            #split scramble in thirds 
+            third = int(len(scramblestr)/6)
+
+            #first third
+            if scramblestr[third] == " ":
+                scramblestr = scramblestr[:third] +  "\n" + scramblestr[third:]
+            elif scramblestr[third + 1] == " ":
+                scramblestr = scramblestr[:third + 1] +  "\n" + scramblestr[third + 1:]
+            elif scramblestr[third - 1] == " ":
+                scramblestr = scramblestr[:third - 1] +  "\n" + scramblestr[third - 1:]
+            elif scramblestr[third + 2] == " ":
+                scramblestr = scramblestr[:third + 2] +  "\n" + scramblestr[third + 2:]
+            else:
+                scramblestr = scramblestr[:third - 2] +  "\n" + scramblestr[third - 2:]
+            
+            #last third
+            if scramblestr[third*2] == " ":
+                scramblestr = scramblestr[:third*2] +  "\n" + scramblestr[third*2:]
+            elif scramblestr[third*2 + 1] == " ":
+                scramblestr = scramblestr[:third*2 + 1] +  "\n" + scramblestr[third*2 + 1:]
+            elif scramblestr[third*2 - 1] == " ":
+                scramblestr = scramblestr[:third*2 - 1] +  "\n" + scramblestr[third*2 -1 :]
+            elif scramblestr[third*2 + 2] == " ":
+                scramblestr = scramblestr[:third*2 + 2] +  "\n" + scramblestr[third*2 + 2:]
+            else:
+                scramblestr = scramblestr[:third*2 - 2] +  "\n" + scramblestr[third*2 - 2:]            
+            
+            #last third
+            if scramblestr[third*3] == " ":
+                scramblestr = scramblestr[:third*3] +  "\n" + scramblestr[third*3:]
+            elif scramblestr[third*3 + 1] == " ":
+                scramblestr = scramblestr[:third*3 + 1] +  "\n" + scramblestr[third*3 + 1:]
+            elif scramblestr[third*3 - 1] == " ":
+                scramblestr = scramblestr[:third*3 - 1] +  "\n" + scramblestr[third*3 -1 :]
+            elif scramblestr[third*3 + 2] == " ":
+                scramblestr = scramblestr[:third*3 + 2] +  "\n" + scramblestr[third*3 + 2:]
+            else:
+                scramblestr = scramblestr[:third*3 - 2] +  "\n" + scramblestr[third*3 - 2:]            
+            
+            #last third
+            if scramblestr[third*4] == " ":
+                scramblestr = scramblestr[:third*4] +  "\n" + scramblestr[third*4:]
+            elif scramblestr[third*4 + 1] == " ":
+                scramblestr = scramblestr[:third*4 + 1] +  "\n" + scramblestr[third*4 + 1:]
+            elif scramblestr[third*4 - 1] == " ":
+                scramblestr = scramblestr[:third*4 - 1] +  "\n" + scramblestr[third*4 -1 :]
+            elif scramblestr[third*4 + 2] == " ":
+                scramblestr = scramblestr[:third*4 + 2] +  "\n" + scramblestr[third*4 + 2:]
+            else:
+                scramblestr = scramblestr[:third*4 - 2] +  "\n" + scramblestr[third*4 - 2:]            
+           
+            #last third
+            if scramblestr[third*5] == " ":
+                scramblestr = scramblestr[:third*5] +  "\n" + scramblestr[third*5:]
+            elif scramblestr[third*5 + 1] == " ":
+                scramblestr = scramblestr[:third*5 + 1] +  "\n" + scramblestr[third*5 + 1:]
+            elif scramblestr[third*5 - 1] == " ":
+                scramblestr = scramblestr[:third*5 - 1] +  "\n" + scramblestr[third*5 -1 :]
+            elif scramblestr[third*5 + 2] == " ":
+                scramblestr = scramblestr[:third*5 + 2] +  "\n" + scramblestr[third*5 + 2:]
+            else:
+                scramblestr = scramblestr[:third*5 - 2] +  "\n" + scramblestr[third*5 - 2:]            
+            
+
+ 
+            print(scramblestr)  
+            self.scramble.config(text = scramblestr,font = ("Arial 10 bold"))
 
 
     def scramble3(self):
@@ -512,7 +639,21 @@ class Stopwatch:
             print("Generating new 2x2 scramble")
             scrambleFile.write(scrambler222.get_WCA_scramble() + os.linesep)
             print("Generation complete")
- 
+
+    def scramble5(self):
+        with open("/home/pi/CubeTimer/scrambles555.txt","a") as scrambleFile:
+            print("Generating new 5x5 scramble")
+            scrambleFile.write(scrambler555.get_WCA_scramble() + os.linesep)
+            print("Generation complete")
+    
+    def scramble7(self):
+        with open("/home/pi/CubeTimer/scrambles777.txt","a") as scrambleFile:
+            print("Generating new 7x7 scramble")
+            scrambleFile.write(scrambler777.get_WCA_scramble() + os.linesep)
+            print("Generation complete")
+
+
+
     def exit(self):
         quit()
 
