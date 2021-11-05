@@ -294,7 +294,7 @@ def draw(cube):
                      for l in range(10):
                         img2.putpixel((((j*10)-10)+k,((i*10)-10)+l), color)
     
-    img2.save('cubelarge.gif')
+    img2.save('/home/pi/CubeTimer/cubelarge.gif')
 
 
 #scramble = "R2 U R' U2 B' L F2 L' B2 F' R D2 U2 R2 B2 R2 B2 L' D' U L' B U2 R' U F' L B' R' U2"

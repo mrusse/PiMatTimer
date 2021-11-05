@@ -33,7 +33,7 @@ class Stopwatch:
         settingImage = tk.PhotoImage(file = "/home/pi/CubeTimer/settingsicon.gif")
         
         self.settingsButton= tk.Button(self.root,highlightthickness = 0,text = 'Back',image = settingImage,font = ("Arial 12 bold"),command=self.view_settings)
-        self.settingsButton.place(relx = 0.9, rely = 0.92, anchor = 'center')
+        self.settingsButton.place(relx = 0.09, rely = 0.92, anchor = 'center')
 
         #logo label
         logoImage = tk.PhotoImage(file = "/home/pi/CubeTimer/logo.gif")
@@ -62,8 +62,9 @@ class Stopwatch:
         self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
         
         #view solves button
-        self.infoButton = tk.Button(self.root,text = '   View Solves',highlightthickness = 0,width= 30,font = ("Arial 12 bold"),command=self.view_solves)
-        self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
+        infoImage = tk.PhotoImage(file = "/home/pi/CubeTimer/infoicon.gif") 
+        self.infoButton = tk.Button(self.root,image = infoImage,highlightthickness = 0,command=self.view_solves)
+        self.infoButton.place(relx = 0.24, rely = 0.92, anchor = 'center') 
 
         #back button
         self.backButton = tk.Button(self.root,text = 'Back',font = ("Arial 12 bold"),command=self.view_timer)  
@@ -217,8 +218,8 @@ class Stopwatch:
                 self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
                 self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
                 self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
-                self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
-                self.settingsButton.place(relx = 0.9, rely = 0.92, anchor = 'center') 
+                self.infoButton.place(relx = 0.24, rely = 0.92, anchor = 'center') 
+                self.settingsButton.place(relx = 0.09, rely = 0.92, anchor = 'center') 
                 
                
                 self.button1.wait_for_release()
@@ -292,14 +293,27 @@ class Stopwatch:
 
     def view_timer(self):
         self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
-        self.infoButton.place(relx = 0.5, rely = 0.92, anchor = 'center') 
+        self.infoButton.place(relx = 0.25, rely = 0.92, anchor = 'center') 
         self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
         self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
         self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
-        self.settingsButton.place(relx = 0.9, rely = 0.92, anchor = 'center')
- 
+        self.settingsButton.place(relx = 0.08, rely = 0.92, anchor = 'center')
+        self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+    
+
         if self.logo.winfo_ismapped():
             self.get_scramble()
+            solvestr = self.scramble.cget("text").replace("\n","")
+
+            command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + solvestr  + "\""
+            os.system(command)
+            self.scrambleImage.destroy()
+
+            self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
+            #os.remove("cubeimage.gif")
+            self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
+            self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+                        
             print(self.selectedCube.get())
 
         self.backButton.place_forget()
