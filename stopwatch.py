@@ -8,7 +8,7 @@ import os
 import logging
 import _thread
 from subprocess import call
-from pyTwistyScrambler.pyTwistyScrambler import scrambler333, scrambler444
+from pyTwistyScrambler.pyTwistyScrambler import scrambler333, scrambler222, scrambler444, scrambler555, scrambler666, scrambler777
 #import imagegen as cubeimage
 
 class Stopwatch:
@@ -213,14 +213,19 @@ class Stopwatch:
                 self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
                 #os.remove("cubeimage.gif")
                 self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
-                self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+                if self.selectedCube.get() == "3x3x3":
+                    self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
                    
                 self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
                 self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
-                self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
+                #self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
                 self.infoButton.place(relx = 0.24, rely = 0.92, anchor = 'center') 
                 self.settingsButton.place(relx = 0.09, rely = 0.92, anchor = 'center') 
                 
+                if self.selectedCube.get() == "4x4x4": 
+                    self.scramble.place(relx = 0.5, rely = 0.16, anchor = 'center')
+                if self.selectedCube.get() == "3x3x3" or self.selectedCube.get() == "2x2x2":
+                    self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')       
                
                 self.button1.wait_for_release()
                 self.button2.wait_for_release() 
@@ -292,7 +297,10 @@ class Stopwatch:
         self.scrambleImage.place_forget()
 
     def view_timer(self):
-        self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
+        if self.selectedCube.get() == "4x4x4": 
+            self.scramble.place(relx = 0.5, rely = 0.16, anchor = 'center')
+        if self.selectedCube.get() == "3x3x3" or self.selectedCube.get() == "2x2x2":
+            self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
         self.infoButton.place(relx = 0.25, rely = 0.92, anchor = 'center') 
         self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
         self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
@@ -303,17 +311,20 @@ class Stopwatch:
 
         if self.logo.winfo_ismapped():
             self.get_scramble()
-            solvestr = self.scramble.cget("text").replace("\n","")
 
-            command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + solvestr  + "\""
-            os.system(command)
-            self.scrambleImage.destroy()
+            if self.selectedCube.get() == "3x3x3":
+                solvestr = self.scramble.cget("text").replace("\n","")
 
-            self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
-            #os.remove("cubeimage.gif")
-            self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
-            self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
-                        
+                command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + solvestr  + "\""
+                os.system(command)
+                self.scrambleImage.destroy()
+
+                self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
+                #os.remove("cubeimage.gif")
+                self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
+                self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+            else:
+                self.scrambleImage.place_forget()     
             print(self.selectedCube.get())
 
         self.backButton.place_forget()
@@ -475,6 +486,14 @@ class Stopwatch:
             print(scramblestr)  
             self.scramble.config(text = scramblestr)
 
+        if self.selectedCube.get() == "2x2x2":
+            stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles222.txt')
+            os.system('tail -n +2 "/home/pi/CubeTimer/scrambles222.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles222.txt"')       
+            _thread.start_new_thread(self.scramble2, ())
+            scramblestr = stream.read()
+            self.scramble.config(text = scramblestr)
+
+
     def scramble3(self):
 
         with open("/home/pi/CubeTimer/scrambles333.txt","a") as scrambleFile:
@@ -487,7 +506,13 @@ class Stopwatch:
             print("Generating new 4x4 scramble")
             scrambleFile.write(scrambler444.get_WCA_scramble() + os.linesep)
             print("Generation complete")                                                                                
-    
+   
+    def scramble2(self):
+        with open("/home/pi/CubeTimer/scrambles222.txt","a") as scrambleFile:
+            print("Generating new 2x2 scramble")
+            scrambleFile.write(scrambler222.get_WCA_scramble() + os.linesep)
+            print("Generation complete")
+ 
     def exit(self):
         quit()
 
