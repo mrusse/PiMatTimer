@@ -140,7 +140,8 @@ class Stopwatch:
         #GPIO pins 19 and 26
         self.button1 = Button(19)
         self.button2 = Button(26)
- 
+        
+        self.delta = 0
         self.paused = True
 
         self.check_input()  
@@ -164,14 +165,14 @@ class Stopwatch:
         if self.paused:
             return
         
-        delta = (time() - self.oldtime)
-        secstr = '%.2f' % delta
-        minstr = int(delta /60)
+        self.delta = (time() - self.oldtime)
+        secstr = '%.2f' % self.delta
+        minstr = int(self.delta /60)
         hourstr = int(minstr/60)
         
         if(minstr > 0):
-            secstr = '%.2f' % (delta - (minstr * 60))
-            if delta - (minstr * 60) < 10:
+            secstr = '%.2f' % (self.delta - (minstr * 60))
+            if self.delta - (minstr * 60) < 10:
                 self.display.config(text= str(minstr) + ":0" + secstr)
             else:
                 self.display.config(text= str(minstr) + ":" + secstr)
@@ -209,16 +210,31 @@ class Stopwatch:
                 scramblestr = self.scramble.cget("text").replace("\n","")
 
                 self.scrambleImage.destroy()
+             
+                try: 
 
-                self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
-                #os.remove("cubeimage.gif")
-                self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
-                if self.selectedCube.get() == "3x3x3":
-                    self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
-                   
+                    with open("/home/pi/CubeTimer/cubelarge.gif", "rb") as last:
+                        linelist = last.readlines()
+                        last = linelist[len(linelist)-1].decode('ascii').replace("\n","")
+                        print("image scramble: " + str(last) + "\n current scramble: " + scramblestr) 
+
+                    if last == scramblestr:
+                        self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
+                    else:
+                        self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/empty.gif")   
+                    self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
+                    if self.selectedCube.get() == "3x3x3":
+                        self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+                except:
+                    self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/empty.gif")
+                    self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
+                    if self.selectedCube.get() == "3x3x3":
+                        self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+
+                    print("----------stop spamming so hard mitch----------")
+   
                 self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
-                self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
-                #self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
+                self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center') 
                 self.infoButton.place(relx = 0.24, rely = 0.92, anchor = 'center') 
                 self.settingsButton.place(relx = 0.09, rely = 0.92, anchor = 'center') 
                 
@@ -249,7 +265,7 @@ class Stopwatch:
                 self.button1.wait_for_release()
                 self.button2.wait_for_release()
 
-                self.get_scramble()
+                self.get_scramble(True)
                 self.display.config(foreground = "black")
                 self.toggle()
                 #self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/empty.gif")   
@@ -313,7 +329,7 @@ class Stopwatch:
     
 
         if self.logo.winfo_ismapped():
-            self.get_scramble()
+            self.get_scramble(False)
 
             if self.selectedCube.get() == "3x3x3":
                 solvestr = self.scramble.cget("text").replace("\n","")
@@ -425,7 +441,7 @@ class Stopwatch:
             if number == 12:
                 self.ao12Label.config(text= "ao12: ") 
 
-    def get_scramble(self):
+    def get_scramble(self,getImage):
 
         if self.selectedCube.get() == "3x3x3":
             stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles333.txt')
@@ -436,9 +452,9 @@ class Stopwatch:
 #            if os.path.exists("/home/pi/CubeTimer/cube.gif"):
  #               os.remove("/home/pi/CubeTimer/cube.gif")
  
-            
-            command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + scramblestr + "\""
-            _thread.start_new_thread(os.system,(command,))        
+            if getImage:
+                command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + scramblestr + "\""
+                _thread.start_new_thread(os.system,(command,))        
  
 
             #split scramble in half and put second half on new line to increase readability 

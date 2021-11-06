@@ -1,4 +1,5 @@
 from PIL import Image, ImageColor
+import os
 import sys
 
 cube = [["W","W","W","W","W","W","W","W","W"],\
@@ -9,7 +10,12 @@ cube = [["W","W","W","W","W","W","W","W","W"],\
         ["Y","Y","Y","Y","Y","Y","Y","Y","Y"]]
 
 scramble = str(sys.argv[1])
-print(scramble) 
+
+if os.path.isfile("/home/pi/CubeTimer/cubelarge.gif"):
+    os.remove("/home/pi/CubeTimer/cubelarge.gif")
+
+print("Generating image for: " + scramble)
+ 
 def rotate(face):
     
     tempcorner = face[6]
@@ -293,6 +299,26 @@ def draw(cube):
                 for k in range(10):
                      for l in range(10):
                         img2.putpixel((((j*10)-10)+k,((i*10)-10)+l), color)
+
+    for i in range(0,120,10):
+        for j in range(90):
+            color = ImageColor.getrgb("black")
+            if img2.getpixel((i,j)) != (191,191,191) and img2.getpixel((i-1,j)) != (191,191,191) and i != 60 and i != 0:
+                img2.putpixel((i,j),color)
+            if img2.getpixel((i,j)) != (191,191,191) and img2.getpixel((i-1,j)) != (191,191,191) and i == 60:
+                img2.putpixel((i-1,j),color)
+    
+    for j in range(0,90,10):
+        for i in range(120):
+            color = ImageColor.getrgb("black")
+            if img2.getpixel((i,j)) != (191,191,191) and img2.getpixel((i,j-1)) != (191,191,191) and j != 60 and j !=0:
+                img2.putpixel((i,j),color)
+            if img2.getpixel((i,j)) != (191,191,191) and img2.getpixel((i,j-1)) != (191,191,191) and j == 60:
+                img2.putpixel((i,j-1),color)
+
+
+            #if img2.get
+            
     
     img2.save('/home/pi/CubeTimer/cubelarge.gif')
 
@@ -309,4 +335,8 @@ for i in range(len(splitScramble)):
     move(splitScramble[i])
     draw(cube)
 
-print("Scrambled image saved in \"cube.gif\"")
+with open("/home/pi/CubeTimer/cubelarge.gif", "a") as last:
+    last.write("\n" + scramble) 
+
+
+print("Scrambled image saved in \"cubelarge.gif\"")
