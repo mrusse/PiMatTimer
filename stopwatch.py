@@ -195,12 +195,12 @@ class Stopwatch:
                 #this appends to a log file lawl
                 solveStr = lastTime + " - " + self.lastScramble.replace("\n", "") 
                 self.logger.info(solveStr) 
+                
                 print(solveStr)
+                
                 self.solvesList.insert(0, ") " + lastTime) 
                 self.solvesList.insert(1,self.lastScramble.replace("\n", ""))
                 self.solvesList.insert(2," ")
-
-                #print(self.solvesList.size())
 
                 self.set_average(5)                                  
                 self.set_average(12)
@@ -208,15 +208,16 @@ class Stopwatch:
                 self.display.update_idletasks()
 
                 scramblestr = self.scramble.cget("text").replace("\n","")
-
                 self.scrambleImage.destroy()
-             
+            
+                #open the gif as binary data and read in the scramble that has been appended in the 
+                #image generation program. if the scramble is the same as the current scramble then it will
+                #show the image.
                 try: 
-
                     with open("/home/pi/CubeTimer/cubelarge.gif", "rb") as last:
                         linelist = last.readlines()
                         last = linelist[len(linelist)-1].decode('ascii').replace("\n","")
-                        print("image scramble: " + str(last) + "\n current scramble: " + scramblestr) 
+                        print("image scramble: " + str(last) + "\ncurrent scramble: " + scramblestr) 
 
                     if last == scramblestr:
                         self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
@@ -237,13 +238,15 @@ class Stopwatch:
                 self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center') 
                 self.infoButton.place(relx = 0.24, rely = 0.92, anchor = 'center') 
                 self.settingsButton.place(relx = 0.09, rely = 0.92, anchor = 'center') 
-                
+                self.display.lift()
+               
                 if self.selectedCube.get() == "4x4x4" or self.selectedCube.get() == "5x5x5": 
                     self.scramble.place(relx = 0.5, rely = 0.16, anchor = 'center')
                 if self.selectedCube.get() == "3x3x3" or self.selectedCube.get() == "2x2x2":
                     self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')       
                 if self.selectedCube.get() == "7x7x7":
-                    self.scramble.place(relx = 0.5, rely = 0.18, anchor = 'center')      
+                    self.scramble.place(relx = 0.5, rely = 0.2, anchor = 'center')      
+                
                 self.button1.wait_for_release()
                 self.button2.wait_for_release() 
                 
@@ -257,8 +260,7 @@ class Stopwatch:
                 self.ao12Label.place_forget()
                 self.settingsButton.place_forget()
                 self.scrambleImage.place_forget()
-                #self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/empty.gif")   
- 
+                
                 self.lastScramble = self.scramble.cget("text")
                 self.display.update_idletasks() 
 
@@ -314,19 +316,22 @@ class Stopwatch:
         self.scrambleImage.place_forget()
 
     def view_timer(self):
+        self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
+
         if self.selectedCube.get() == "4x4x4" or self.selectedCube.get() == "5x5x5": 
             self.scramble.place(relx = 0.5, rely = 0.16, anchor = 'center')
         if self.selectedCube.get() == "7x7x7":
-            self.scramble.place(relx = 0.5, rely = 0.18, anchor = 'center')
+            self.scramble.place(relx = 0.5, rely = 0.2, anchor = 'center')
         if self.selectedCube.get() == "3x3x3" or self.selectedCube.get() == "2x2x2":
             self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
         self.infoButton.place(relx = 0.25, rely = 0.92, anchor = 'center') 
-        self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
         self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
         self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
         self.settingsButton.place(relx = 0.08, rely = 0.92, anchor = 'center')
         self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
     
+
+        self.display.lift()
 
         if self.logo.winfo_ismapped():
             self.get_scramble(False)
@@ -411,14 +416,9 @@ class Stopwatch:
                 else:
                     aoArray.append(float(self.solvesList.get(i).split(") ")[1])) 
                                                
-            #for k in range(number):
-                #print(aoArray[k])                
- 
             top = aoArray[0]
             bot = aoArray[0]
             total = 0
-
-            #print(len(aoArray))
                     
             for j in range(number):
                 if aoArray[j] > top:
@@ -449,60 +449,21 @@ class Stopwatch:
             _thread.start_new_thread(self.scramble3, ())
             scramblestr = stream.read()
 
-#            if os.path.exists("/home/pi/CubeTimer/cube.gif"):
- #               os.remove("/home/pi/CubeTimer/cube.gif")
- 
             if getImage:
                 command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + scramblestr + "\""
                 _thread.start_new_thread(os.system,(command,))        
  
-
-            #split scramble in half and put second half on new line to increase readability 
-            middle = int(len(scramblestr)/2)
-
-            if scramblestr[middle] == " ":
-                scramblestr = scramblestr[:middle] +  "\n" + scramblestr[middle:]
-            elif scramblestr[middle + 1] == " ":
-                scramblestr = scramblestr[:middle + 1] +  "\n" + scramblestr[middle + 1:]
-            else:
-                scramblestr = scramblestr[:middle - 1] +  "\n" + scramblestr[middle -1 :]
- 
+            scramblestr = self.split_scramble(scramblestr,2) 
             self.scramble.config(text = scramblestr,font = ("Arial 14 bold"))
 
         if self.selectedCube.get() == "4x4x4":
             stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles444.txt')
             os.system('tail -n +2 "/home/pi/CubeTimer/scrambles444.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles444.txt"')       
             _thread.start_new_thread(self.scramble4, ())
-            scramblestr = stream.read()
-            print(scramblestr)  
-            #split scramble in thirds 
-            third = int(len(scramblestr)/3)
-
-            #first third
-            if scramblestr[third] == " ":
-                scramblestr = scramblestr[:third] +  "\n" + scramblestr[third:]
-            elif scramblestr[third + 1] == " ":
-                scramblestr = scramblestr[:third + 1] +  "\n" + scramblestr[third + 1:]
-            elif scramblestr[third - 1] == " ":
-                scramblestr = scramblestr[:third - 1] +  "\n" + scramblestr[third - 1:]
-            elif scramblestr[third + 2] == " ":
-                scramblestr = scramblestr[:third + 2] +  "\n" + scramblestr[third + 2:]
-            else:
-                scramblestr = scramblestr[:third - 2] +  "\n" + scramblestr[third - 2:]
-            
-            #last third
-            if scramblestr[third*2] == " ":
-                scramblestr = scramblestr[:third*2] +  "\n" + scramblestr[third*2:]
-            elif scramblestr[third*2 + 1] == " ":
-                scramblestr = scramblestr[:third*2 + 1] +  "\n" + scramblestr[third*2 + 1:]
-            elif scramblestr[third*2 - 1] == " ":
-                scramblestr = scramblestr[:third*2 - 1] +  "\n" + scramblestr[third*2 -1 :]
-            elif scramblestr[third*2 + 2] == " ":
-                scramblestr = scramblestr[:third*2 + 2] +  "\n" + scramblestr[third*2 + 2:]
-            else:
-                scramblestr = scramblestr[:third*2 - 2] +  "\n" + scramblestr[third*2 - 2:]            
            
-            print(scramblestr)  
+            scramblestr = stream.read()
+            scramblestr = self.split_scramble(scramblestr,3)          
+             
             self.scramble.config(text = scramblestr,font = ("Arial 14 bold"))
 
         if self.selectedCube.get() == "2x2x2":
@@ -516,126 +477,39 @@ class Stopwatch:
             stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles555.txt')
             os.system('tail -n +2 "/home/pi/CubeTimer/scrambles555.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles555.txt"')       
             _thread.start_new_thread(self.scramble5, ())
-            scramblestr = stream.read()
-            print(scramblestr)  
-            #split scramble in thirds 
-            third = int(len(scramblestr)/4)
+ 
+            scramblestr = stream.read() 
+            scramblestr = self.split_scramble(scramblestr,4)            
 
-            #first third
-            if scramblestr[third] == " ":
-                scramblestr = scramblestr[:third] +  "\n" + scramblestr[third:]
-            elif scramblestr[third + 1] == " ":
-                scramblestr = scramblestr[:third + 1] +  "\n" + scramblestr[third + 1:]
-            elif scramblestr[third - 1] == " ":
-                scramblestr = scramblestr[:third - 1] +  "\n" + scramblestr[third - 1:]
-            elif scramblestr[third + 2] == " ":
-                scramblestr = scramblestr[:third + 2] +  "\n" + scramblestr[third + 2:]
-            else:
-                scramblestr = scramblestr[:third - 2] +  "\n" + scramblestr[third - 2:]
-            
-            #last third
-            if scramblestr[third*2] == " ":
-                scramblestr = scramblestr[:third*2] +  "\n" + scramblestr[third*2:]
-            elif scramblestr[third*2 + 1] == " ":
-                scramblestr = scramblestr[:third*2 + 1] +  "\n" + scramblestr[third*2 + 1:]
-            elif scramblestr[third*2 - 1] == " ":
-                scramblestr = scramblestr[:third*2 - 1] +  "\n" + scramblestr[third*2 -1 :]
-            elif scramblestr[third*2 + 2] == " ":
-                scramblestr = scramblestr[:third*2 + 2] +  "\n" + scramblestr[third*2 + 2:]
-            else:
-                scramblestr = scramblestr[:third*2 - 2] +  "\n" + scramblestr[third*2 - 2:]            
-            
-            #last third
-            if scramblestr[third*3] == " ":
-                scramblestr = scramblestr[:third*3] +  "\n" + scramblestr[third*3:]
-            elif scramblestr[third*3 + 1] == " ":
-                scramblestr = scramblestr[:third*3 + 1] +  "\n" + scramblestr[third*3 + 1:]
-            elif scramblestr[third*3 - 1] == " ":
-                scramblestr = scramblestr[:third*3 - 1] +  "\n" + scramblestr[third*3 -1 :]
-            elif scramblestr[third*3 + 2] == " ":
-                scramblestr = scramblestr[:third*3 + 2] +  "\n" + scramblestr[third*3 + 2:]
-            else:
-                scramblestr = scramblestr[:third*3 - 2] +  "\n" + scramblestr[third*3 - 2:]            
-            
-
-
-            print(scramblestr)  
             self.scramble.config(text = scramblestr,font = ("Arial 12 bold"))
     
         if self.selectedCube.get() == "7x7x7":
             stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles777.txt')
             os.system('tail -n +2 "/home/pi/CubeTimer/scrambles777.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles777.txt"')       
-            _thread.start_new_thread(self.scramble5, ())
-            scramblestr = stream.read()
-            print(scramblestr)  
-            #split scramble in thirds 
-            third = int(len(scramblestr)/6)
-
-            #first third
-            if scramblestr[third] == " ":
-                scramblestr = scramblestr[:third] +  "\n" + scramblestr[third:]
-            elif scramblestr[third + 1] == " ":
-                scramblestr = scramblestr[:third + 1] +  "\n" + scramblestr[third + 1:]
-            elif scramblestr[third - 1] == " ":
-                scramblestr = scramblestr[:third - 1] +  "\n" + scramblestr[third - 1:]
-            elif scramblestr[third + 2] == " ":
-                scramblestr = scramblestr[:third + 2] +  "\n" + scramblestr[third + 2:]
-            else:
-                scramblestr = scramblestr[:third - 2] +  "\n" + scramblestr[third - 2:]
+            _thread.start_new_thread(self.scramble7, ())
             
-            #last third
-            if scramblestr[third*2] == " ":
-                scramblestr = scramblestr[:third*2] +  "\n" + scramblestr[third*2:]
-            elif scramblestr[third*2 + 1] == " ":
-                scramblestr = scramblestr[:third*2 + 1] +  "\n" + scramblestr[third*2 + 1:]
-            elif scramblestr[third*2 - 1] == " ":
-                scramblestr = scramblestr[:third*2 - 1] +  "\n" + scramblestr[third*2 -1 :]
-            elif scramblestr[third*2 + 2] == " ":
-                scramblestr = scramblestr[:third*2 + 2] +  "\n" + scramblestr[third*2 + 2:]
-            else:
-                scramblestr = scramblestr[:third*2 - 2] +  "\n" + scramblestr[third*2 - 2:]            
-            
-            #last third
-            if scramblestr[third*3] == " ":
-                scramblestr = scramblestr[:third*3] +  "\n" + scramblestr[third*3:]
-            elif scramblestr[third*3 + 1] == " ":
-                scramblestr = scramblestr[:third*3 + 1] +  "\n" + scramblestr[third*3 + 1:]
-            elif scramblestr[third*3 - 1] == " ":
-                scramblestr = scramblestr[:third*3 - 1] +  "\n" + scramblestr[third*3 -1 :]
-            elif scramblestr[third*3 + 2] == " ":
-                scramblestr = scramblestr[:third*3 + 2] +  "\n" + scramblestr[third*3 + 2:]
-            else:
-                scramblestr = scramblestr[:third*3 - 2] +  "\n" + scramblestr[third*3 - 2:]            
-            
-            #last third
-            if scramblestr[third*4] == " ":
-                scramblestr = scramblestr[:third*4] +  "\n" + scramblestr[third*4:]
-            elif scramblestr[third*4 + 1] == " ":
-                scramblestr = scramblestr[:third*4 + 1] +  "\n" + scramblestr[third*4 + 1:]
-            elif scramblestr[third*4 - 1] == " ":
-                scramblestr = scramblestr[:third*4 - 1] +  "\n" + scramblestr[third*4 -1 :]
-            elif scramblestr[third*4 + 2] == " ":
-                scramblestr = scramblestr[:third*4 + 2] +  "\n" + scramblestr[third*4 + 2:]
-            else:
-                scramblestr = scramblestr[:third*4 - 2] +  "\n" + scramblestr[third*4 - 2:]            
-           
-            #last third
-            if scramblestr[third*5] == " ":
-                scramblestr = scramblestr[:third*5] +  "\n" + scramblestr[third*5:]
-            elif scramblestr[third*5 + 1] == " ":
-                scramblestr = scramblestr[:third*5 + 1] +  "\n" + scramblestr[third*5 + 1:]
-            elif scramblestr[third*5 - 1] == " ":
-                scramblestr = scramblestr[:third*5 - 1] +  "\n" + scramblestr[third*5 -1 :]
-            elif scramblestr[third*5 + 2] == " ":
-                scramblestr = scramblestr[:third*5 + 2] +  "\n" + scramblestr[third*5 + 2:]
-            else:
-                scramblestr = scramblestr[:third*5 - 2] +  "\n" + scramblestr[third*5 - 2:]            
-            
-
+            scramblestr = stream.read()           
+            scramblestr = self.split_scramble(scramblestr,7)
  
-            print(scramblestr)  
             self.scramble.config(text = scramblestr,font = ("Arial 10 bold"))
 
+    def split_scramble(self,scramble,lines):
+
+        split = int(len(scramble)/lines)
+
+        for i in range(1,lines):
+            if scramble[split*i] == " ":
+                scramble = scramble[:split*i + 1] +  "\n" + scramble[split*i + 1:]
+            elif scramble[split*i + 1] == " ":
+                scramble = scramble[:split*i + 2] +  "\n" + scramble[split*i + 2:]
+            elif scramble[split*i - 1] == " ":
+                scramble = scramble[:split*i] +  "\n" + scramble[split*i:]
+            elif scramble[split*i + 2] == " ":
+                scramble = scramble[:split*i + 3] +  "\n" + scramble[split*i + 3:]
+            else:
+                scramble = scramble[:split*i - 1] +  "\n" + scramble[split*i - 1:]            
+        
+        return scramble
 
     def scramble3(self):
 
