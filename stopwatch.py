@@ -121,8 +121,8 @@ class Stopwatch:
             solveFile.close()
 
             self.set_average(5) 
-            self.set_average(12)            
-    
+            self.set_average(12)             
+ 
         #scramble label
         #split scramble in half and put second half on new line to increase readability 
         middle = int(len(scramblestr)/2)
@@ -194,8 +194,12 @@ class Stopwatch:
 
                 #this appends to a log file lawl
                 solveStr = lastTime + " - " + self.lastScramble.replace("\n", "") 
-                self.logger.info(solveStr) 
-                
+
+                solveFile = open("/home/pi/CubeTimer/solves.txt","a")
+
+                solveFile.write(solveStr + "\n") 
+                _thread.start_new_thread(solveFile.close,())
+        
                 print(solveStr)
                 
                 self.solvesList.insert(0, ") " + lastTime) 
@@ -210,7 +214,7 @@ class Stopwatch:
                 scramblestr = self.scramble.cget("text").replace("\n","")
                 self.scrambleImage.destroy()
             
-                #open the gif as binary data and read in the scramble that has been appended in the 
+                #open the image gif as binary data and read in the scramble that has been appended in the 
                 #image generation program. if the scramble is the same as the current scramble then it will
                 #show the image.
                 try: 
@@ -302,7 +306,16 @@ class Stopwatch:
             for i in range(len(solveArray)):
                 current = solveArray[i].split(" - ")
                 self.solvesList.insert(tk.END,current[0])
-                self.solvesList.insert(tk.END,current[1])
+                if len(current[1]) > 70:
+                    lines = int(len(current[1]) / 40)
+                    current[1] = self.split_scramble(current[1],lines)
+                    splitScramble = current[1].split("\n")
+                    
+                    for i in range(len(splitScramble)):
+                        self.solvesList.insert(tk.END,splitScramble[i])
+ 
+                else:
+                    self.solvesList.insert(tk.END,current[1])
                 self.solvesList.insert(tk.END," ") 
 
             solveFile.close() 
@@ -330,7 +343,6 @@ class Stopwatch:
         self.settingsButton.place(relx = 0.08, rely = 0.92, anchor = 'center')
         self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
     
-
         self.display.lift()
 
         if self.logo.winfo_ismapped():
@@ -385,41 +397,53 @@ class Stopwatch:
         if not (len(selectedArray) > 1):
             return
 
-        if ":" in selectedArray[1]:
-            selectedArray[1].replace(':','')
-            
-        #if isinstance(float(selectedArray[1].rstrip()),float):
-        self.solvesList.delete(selection[0],selection[0]+2)
+        #print(selectedArray[1])
+        
+ 
+        self.solvesList.delete(selection[0])
             
         lineToDelete = selectedArray[0].strip()
-        deleteString = "sed -i '{0}d' /home/pi/CubeTimer/solves.txt".format(lineToDelete)
-        os.system(deleteString)
-        print("Deleted solve #" + lineToDelete + ": " +selectedArray[1])
 
+        with open("/home/pi/CubeTimer/solves.txt", "r") as solveFile:
+            lines = solveFile.readlines()
+        with open("/home/pi/CubeTimer/solves.txt", "w") as solveFile:
+            for line in lines:
+                if not selectedArray[1] in line.strip("\n"):
+                    solveFile.write(line)        
+
+        print("Deleted solve #" + lineToDelete + ": " +selectedArray[1])
+       
         self.set_average(5)
         self.set_average(12)
         self.view_solves()
         self.solvesList.see(selection[0])
-
-    
+            
     def set_average(self, number):
         
-        if self.solvesList.size() >= ((number*3) - 1):
+        solveNum = 0
+
+        for i in range(self.solvesList.size()):
+            if "." in self.solvesList.get(i):
+                solveNum += 1
+
+        if solveNum >= number:
 
             aoArray = []
-
-            for i in range(0,number*3,3):
-                if ":" in self.solvesList.get(i).split(") ")[1]:
-                    minute = self.solvesList.get(i).split(") ")[1].split(":")
-                    secondsToAdd = float(float(minute[0]) * 60)
-                    aoArray.append(float(float(minute[1]) + secondsToAdd))
-                else:
-                    aoArray.append(float(self.solvesList.get(i).split(") ")[1])) 
+            for i in range(self.solvesList.size()):
+                if "." in self.solvesList.get(i):
+                    if ":" in self.solvesList.get(i).split(") ")[1]:
+                        minute = self.solvesList.get(i).split(") ")[1].split(":")
+                        secondsToAdd = float(float(minute[0]) * 60)
+                        aoArray.append(float(float(minute[1]) + secondsToAdd))
+                    else:
+                        aoArray.append(float(self.solvesList.get(i).split(") ")[1])) 
+                if len(aoArray) == number:
+                    break
                                                
             top = aoArray[0]
             bot = aoArray[0]
             total = 0
-                    
+ 
             for j in range(number):
                 if aoArray[j] > top:
                     top = aoArray[j]
@@ -545,6 +569,7 @@ class Stopwatch:
 
 
     def exit(self):
+        self.solveFile.close()
         quit()
 
     def shutdown(self):
