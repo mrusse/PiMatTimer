@@ -1,5 +1,4 @@
 import tkinter as tk
-import threading
 from gpiozero import Button
 from time import time
 import random
@@ -10,7 +9,8 @@ import platform
 import _thread
 from subprocess import call
 from pyTwistyScrambler.pyTwistyScrambler import scrambler333, scrambler222, scrambler444, scrambler555, scrambler666, scrambler777
-#import imagegen as cubeimage
+import socket
+from termcolor import colored
 
 class Stopwatch:
     
@@ -38,13 +38,11 @@ class Stopwatch:
                 self.path = "/"
                 self.resources = self.path + "resources/"
                 self.solvepath = self.path + "solves/"
-
-        #start solves webserver
         
-        if not self.system == "Windows":
-            _thread.start_new_thread(os.system,('python3 ' + self.path + 'webserver/server.py' ,))
-        else:
-            _thread.start_new_thread(os.system,('python3 ' + self.path + 'webserver\\server.py' ,))
+        #try to connect to webserver, single retry
+        self.ipLabel = "" 
+        self.connectionAttempt = False
+        self.connect_webserver()        
 
         #timer label
         self.display = tk.Label(self.root,bg = "#BFBFBF" ,text='0.00', font = ("Arial Bold", 50))
@@ -59,7 +57,7 @@ class Stopwatch:
         #logo label
         logoImage = tk.PhotoImage(file = self.resources + "logo.gif")
         self.logo = tk.Label(self.root,bg = "#BFBFBF" ,image = logoImage)
-        
+               
         #cube dropdown
         self.cubeList = ["3x3x3", "2x2x2" , "4x4x4" , "5x5x5" , "6x6x6" , "7x7x7"]
         self.selectedCube = tk.StringVar(self.root)
@@ -155,7 +153,7 @@ class Stopwatch:
         else:
             scramblestr = scramblestr[:middle - 1] +  "\n" + scramblestr[middle -1 :]
 
-        self.scramble = tk.Label(self.root,bg = "#BFBFBF", text= scramblestr, font = ("Arial 14 bold")) 
+        self.scramble = tk.Label(self.root,bg = "#BFBFBF", text= scramblestr, font = ("Arial 15 bold")) 
         self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
 
         #GPIO pins 19 and 26
@@ -169,6 +167,35 @@ class Stopwatch:
         self.root.mainloop()
         
 
+    def connect_webserver(self):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 8080))
+            self.iplocal = (s.getsockname()[0])
+            s.close()
+
+            #start solves webserver (NOTE this is only a local webser on your own wifi. no one outside your setwork can access this
+        
+            if not self.system == "Windows":
+                _thread.start_new_thread(os.system,('python3 ' + self.path + 'webserver/server.py' ,))
+            else:
+                _thread.start_new_thread(os.system,('python3 ' + self.path + 'webserver\\server.py' ,))
+            
+            #webserverip label 
+            self.ipLabel = tk.Label(self.root,bg = "#BFBFBF", text= "Visit http://" + self.iplocal + ":8080\non your PC to export your solves", font = ("Arial 12")) 
+            return
+        except: 
+            self.iplocal = "No internet connection"        
+            if self.connectionAttempt:
+                print(colored("Web server can't start since there is no internet connection","red")) 
+            self.ipLabel = tk.Label(self.root,bg = "#BFBFBF", text= self.iplocal, font = ("Arial 12"))        
+            
+            if self.connectionAttempt:
+                return
+            self.connectionAttempt = True
+
+        self.root.after(3000,self.connect_webserver)
+        
     #toggle the timer on and off
     def toggle(self):
         
@@ -396,14 +423,16 @@ class Stopwatch:
         self.cubeDropdown.place_forget()
         self.logo.place_forget()
         self.dropdownLabel.place_forget()
+        self.ipLabel.place_forget()
  
     def view_settings(self):
-        self.exit.place(relx = 0.48, rely = 0.92, anchor = 'center') 
-        self.shutdown.place(relx = 0.71, rely = 0.92, anchor = 'center')
-        self.backButton.place(relx = 0.28, rely = 0.92, anchor = 'center')
-        self.cubeDropdown.place(relx = 0.69, rely = 0.38, anchor = 'center')
-        self.logo.place(relx = 0.3, rely = 0.4, anchor = 'center')
-        self.dropdownLabel.place(relx = 0.76, rely = 0.24, anchor = 'center')
+        self.exit.place(relx = 0.25, rely = 0.92, anchor = 'center') 
+        self.shutdown.place(relx = 0.44, rely = 0.92, anchor = 'center')
+        self.backButton.place(relx = 0.1, rely = 0.92, anchor = 'center')
+        self.cubeDropdown.place(relx = 0.69, rely = 0.47, anchor = 'center')
+        self.logo.place(relx = 0.28, rely = 0.5, anchor = 'center')
+        self.dropdownLabel.place(relx = 0.76, rely = 0.345, anchor = 'center')
+        self.ipLabel.place(relx = 0.28, rely = 0.08, anchor = 'center')
 
         self.ao5Label.place_forget()
         self.ao12Label.place_forget()
@@ -504,7 +533,7 @@ class Stopwatch:
                 _thread.start_new_thread(os.system,(command,))        
  
             scramblestr = self.split_scramble(scramblestr,2) 
-            self.scramble.config(text = scramblestr,font = ("Arial 14 bold"))
+            self.scramble.config(text = scramblestr,font = ("Arial 15 bold"))
 
         if self.selectedCube.get() == "4x4x4":
             stream = os.popen('head -n 1 ' + self.resources + 'scrambles444.txt')
@@ -521,7 +550,7 @@ class Stopwatch:
             os.system('tail -n +2 "' + self.resources+ 'scrambles222.txt" > "' + self.resources + 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles222.txt"')       
             _thread.start_new_thread(self.scramble2, ())
             scramblestr = stream.read()
-            self.scramble.config(text = scramblestr,font = ("Arial 14 bold"))
+            self.scramble.config(text = scramblestr,font = ("Arial 15 bold"))
         
         if self.selectedCube.get() == "5x5x5":
             stream = os.popen('head -n 1 ' + self.resources + 'scrambles555.txt')
@@ -594,8 +623,8 @@ class Stopwatch:
 
 
 
-    def exit(self): 
-        quit()
+    def exit(self):   
+        exit(0)
 
     def shutdown(self):
         call("sudo nohup shutdown -h now", shell=True)

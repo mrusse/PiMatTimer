@@ -1,9 +1,10 @@
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template, send_file, request
 import datetime
 from tabulate import tabulate
 import socket
 import time
 import _thread
+import os
 
 app = Flask(__name__)
 @app.route("/")
@@ -37,7 +38,22 @@ def download5():
 def download7():
     path = "/home/pi/CubeTimer/solves/solves7x7x7.txt"
     return send_file(path, as_attachment=True)
+@app.route("/screenshot")
+def screenshot():
+    path = "/home/pi/CubeTimer/screenschot.png"
+    os.system("scrot " + path) 
+    return send_file(path, as_attachment=True)
 
+@app.route("/shutdown", methods=['GET'])
+def shutdown():
+    shutdown_func = request.environ.get('werkzeug.server.shutdown')
+    if shutdown_func is None:
+        raise RuntimeError('Not running werkzeug')
+    shutdown_func()
+    return "Shutting down..."
 
-if __name__ == "__main__":
-    app.run(host='192.168.1.217', port=8080, debug=True)
+def stop():
+    resp = request.get('http://0.0.0.0:8080/shutdown')
+
+if  __name__ == "__main__":
+    app.run(host='0.0.0.0', port=8080, debug=True)
