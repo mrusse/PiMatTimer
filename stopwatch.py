@@ -6,6 +6,7 @@ import random
 import sys
 import os
 import logging
+import platform
 import _thread
 from subprocess import call
 from pyTwistyScrambler.pyTwistyScrambler import scrambler333, scrambler222, scrambler444, scrambler555, scrambler666, scrambler777
@@ -21,22 +22,42 @@ class Stopwatch:
         self.root.config(cursor="none",bg = "#BFBFBF") 
 
         self.lastScramble = ""
-        logging.basicConfig(filename="/home/pi/CubeTimer/solves.txt",format='%(message)s',filemode='a')
-        self.logger=logging.getLogger()  
-        self.logger.setLevel(logging.DEBUG)  
+        self.system = platform.system()
+   
+        if os.path.isdir("/home/pi/CubeTimer/"):
+            self.path = "/home/pi/CubeTimer/"
+            self.resources = self.path + "resources/"
+            self.solvepath = self.path + "solves/"
+        else:
+            
+            if self.system == "Windows":
+                self.path ="\\"
+                self.resources = self.path + "resources\\"
+                self.solvepath = self.path + "solves\\"
+            else:
+                self.path = "/"
+                self.resources = self.path + "resources/"
+                self.solvepath = self.path + "solves/"
+
+        #start solves webserver
+        
+        if not self.system == "Windows":
+            _thread.start_new_thread(os.system,('python3 ' + self.path + 'webserver/server.py' ,))
+        else:
+            _thread.start_new_thread(os.system,('python3 ' + self.path + 'webserver\\server.py' ,))
 
         #timer label
         self.display = tk.Label(self.root,bg = "#BFBFBF" ,text='0.00', font = ("Arial Bold", 50))
         self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
                
         #settings button 
-        settingImage = tk.PhotoImage(file = "/home/pi/CubeTimer/settingsicon.gif")
+        settingImage = tk.PhotoImage(file = self.resources + "settingsicon.gif")
         
         self.settingsButton= tk.Button(self.root,highlightthickness = 0,text = 'Back',image = settingImage,font = ("Arial 12 bold"),command=self.view_settings)
         self.settingsButton.place(relx = 0.09, rely = 0.92, anchor = 'center')
 
         #logo label
-        logoImage = tk.PhotoImage(file = "/home/pi/CubeTimer/logo.gif")
+        logoImage = tk.PhotoImage(file = self.resources + "logo.gif")
         self.logo = tk.Label(self.root,bg = "#BFBFBF" ,image = logoImage)
         
         #cube dropdown
@@ -62,7 +83,7 @@ class Stopwatch:
         self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
         
         #view solves button
-        infoImage = tk.PhotoImage(file = "/home/pi/CubeTimer/infoicon.gif") 
+        infoImage = tk.PhotoImage(file = self.resources + "infoicon.gif") 
         self.infoButton = tk.Button(self.root,image = infoImage,highlightthickness = 0,command=self.view_solves)
         self.infoButton.place(relx = 0.24, rely = 0.92, anchor = 'center') 
 
@@ -79,26 +100,26 @@ class Stopwatch:
         self.shutdown = tk.Button(self.root,text = 'Shutdown',font = ("Arial 12 bold"),command=self.shutdown)  
 
         #get first scramble from file then delete it from the file then generate new scramble in a new thread
-        stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles333.txt')
+        stream = os.popen('head -n 1 ' + self.resources + 'scrambles333.txt')
         scramblestr = stream.read() 
-        os.system('tail -n +2 "/home/pi/CubeTimer/scrambles333.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles333.txt"')       
+        os.system('tail -n +2 "' + self.resources + 'scrambles333.txt" > "' + self.resources + 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles333.txt"')       
         _thread.start_new_thread(self.scramble3,())
         
         
         #scrambleimage label
 
-        command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + scramblestr + "\""
+        command = 'python3 ' + self.path + 'imagegen.py' + ' \"' + scramblestr + '\"'
         os.system(command)        
 
-        self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
+        self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
         #os.remove("cubeimage.gif")
         self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
         self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
     
       
         #fill up listbox and get average
-        if os.path.isfile("/home/pi/CubeTimer/solves.txt"):
-            solveFile = open("/home/pi/CubeTimer/solves.txt")
+        if os.path.isfile(self.solvepath + "solves3x3x3.txt"):
+            solveFile = open(self.solvepath + "solves3x3x3.txt")
             solveArray = []
     
             x = 1
@@ -195,7 +216,8 @@ class Stopwatch:
                 #this appends to a log file lawl
                 solveStr = lastTime + " - " + self.lastScramble.replace("\n", "") 
 
-                solveFile = open("/home/pi/CubeTimer/solves.txt","a")
+                location = self.solvepath + "solves" + self.selectedCube.get() + ".txt"
+                solveFile = open(location,"a")
 
                 solveFile.write(solveStr + "\n") 
                 _thread.start_new_thread(solveFile.close,())
@@ -218,20 +240,20 @@ class Stopwatch:
                 #image generation program. if the scramble is the same as the current scramble then it will
                 #show the image.
                 try: 
-                    with open("/home/pi/CubeTimer/cubelarge.gif", "rb") as last:
+                    with open(self.resources + "cubelarge.gif", "rb") as last:
                         linelist = last.readlines()
                         last = linelist[len(linelist)-1].decode('ascii').replace("\n","")
                         print("image scramble: " + str(last) + "\ncurrent scramble: " + scramblestr) 
 
                     if last == scramblestr:
-                        self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
+                        self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
                     else:
-                        self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/empty.gif")   
+                        self.scramblePic = tk.PhotoImage(file = self.resources + "empty.gif")   
                     self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
                     if self.selectedCube.get() == "3x3x3":
                         self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
                 except:
-                    self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/empty.gif")
+                    self.scramblePic = tk.PhotoImage(file = self.resources + "empty.gif")
                     self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
                     if self.selectedCube.get() == "3x3x3":
                         self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
@@ -274,7 +296,7 @@ class Stopwatch:
                 self.get_scramble(True)
                 self.display.config(foreground = "black")
                 self.toggle()
-                #self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/empty.gif")   
+                #self.scramblePic = tk.PhotoImage(file = "self.pathresources/empty.gif")   
  
 
         self.display.after(10,self.check_input)
@@ -288,8 +310,10 @@ class Stopwatch:
         
         self.solvesList.delete(0,tk.END)
 
-        if os.path.isfile("/home/pi/CubeTimer/solves.txt"):
-            solveFile = open("/home/pi/CubeTimer/solves.txt")
+        location = self.solvepath + "solves" + self.selectedCube.get() + ".txt"
+
+        if os.path.isfile(location):
+            solveFile = open(location)
             solveArray = []
     
             x = 1
@@ -351,11 +375,11 @@ class Stopwatch:
             if self.selectedCube.get() == "3x3x3":
                 solvestr = self.scramble.cget("text").replace("\n","")
 
-                command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + solvestr  + "\""
+                command = 'python3 ' + self.path + 'imagegen.py' + ' \"' + solvestr  + '\"'
                 os.system(command)
                 self.scrambleImage.destroy()
 
-                self.scramblePic = tk.PhotoImage(file = "/home/pi/CubeTimer/cubelarge.gif")
+                self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
                 #os.remove("cubeimage.gif")
                 self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
                 self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
@@ -404,9 +428,11 @@ class Stopwatch:
             
         lineToDelete = selectedArray[0].strip()
 
-        with open("/home/pi/CubeTimer/solves.txt", "r") as solveFile:
+        location = self.solvepath + "solves" + self.selectedCube.get() + ".txt"
+
+        with open(location, "r") as solveFile:
             lines = solveFile.readlines()
-        with open("/home/pi/CubeTimer/solves.txt", "w") as solveFile:
+        with open(location, "w") as solveFile:
             for line in lines:
                 if not selectedArray[1] in line.strip("\n"):
                     solveFile.write(line)        
@@ -468,21 +494,21 @@ class Stopwatch:
     def get_scramble(self,getImage):
 
         if self.selectedCube.get() == "3x3x3":
-            stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles333.txt')
-            os.system('tail -n +2 "/home/pi/CubeTimer/scrambles333.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles333.txt"')       
+            stream = os.popen('head -n 1 ' + self.resources + 'scrambles333.txt')
+            os.system('tail -n +2 "' + self.resources+ 'scrambles333.txt" > "' + self.resources + 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles333.txt"')       
             _thread.start_new_thread(self.scramble3, ())
             scramblestr = stream.read()
 
             if getImage:
-                command = "python3 /home/pi/CubeTimer/imagegen.py" + " \"" + scramblestr + "\""
+                command = "python3 "+ self.path + "imagegen.py" + " \"" + scramblestr + "\""
                 _thread.start_new_thread(os.system,(command,))        
  
             scramblestr = self.split_scramble(scramblestr,2) 
             self.scramble.config(text = scramblestr,font = ("Arial 14 bold"))
 
         if self.selectedCube.get() == "4x4x4":
-            stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles444.txt')
-            os.system('tail -n +2 "/home/pi/CubeTimer/scrambles444.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles444.txt"')       
+            stream = os.popen('head -n 1 ' + self.resources + 'scrambles444.txt')
+            os.system('tail -n +2 "' + self.resources+ 'scrambles444.txt" > "' + self.resources + 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles444.txt"')       
             _thread.start_new_thread(self.scramble4, ())
            
             scramblestr = stream.read()
@@ -491,15 +517,15 @@ class Stopwatch:
             self.scramble.config(text = scramblestr,font = ("Arial 14 bold"))
 
         if self.selectedCube.get() == "2x2x2":
-            stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles222.txt')
-            os.system('tail -n +2 "/home/pi/CubeTimer/scrambles222.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles222.txt"')       
+            stream = os.popen('head -n 1 ' + self.resources + 'scrambles222.txt')
+            os.system('tail -n +2 "' + self.resources+ 'scrambles222.txt" > "' + self.resources + 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles222.txt"')       
             _thread.start_new_thread(self.scramble2, ())
             scramblestr = stream.read()
             self.scramble.config(text = scramblestr,font = ("Arial 14 bold"))
         
         if self.selectedCube.get() == "5x5x5":
-            stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles555.txt')
-            os.system('tail -n +2 "/home/pi/CubeTimer/scrambles555.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles555.txt"')       
+            stream = os.popen('head -n 1 ' + self.resources + 'scrambles555.txt')
+            os.system('tail -n +2 "' + self.resources+ 'scrambles555.txt" > "' + self.resources + 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles555.txt"')       
             _thread.start_new_thread(self.scramble5, ())
  
             scramblestr = stream.read() 
@@ -508,8 +534,8 @@ class Stopwatch:
             self.scramble.config(text = scramblestr,font = ("Arial 12 bold"))
     
         if self.selectedCube.get() == "7x7x7":
-            stream = os.popen('head -n 1 /home/pi/CubeTimer/scrambles777.txt')
-            os.system('tail -n +2 "/home/pi/CubeTimer/scrambles777.txt" > "/home/pi/CubeTimer/tmp.txt" && mv "/home/pi/CubeTimer/tmp.txt" "/home/pi/CubeTimer/scrambles777.txt"')       
+            stream = os.popen('head -n 1 ' + self.resources + 'scrambles777.txt')
+            os.system('tail -n +2 "' + self.resources+ 'scrambles777.txt" > "' + self.resources+ 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles777.txt"')       
             _thread.start_new_thread(self.scramble7, ())
             
             scramblestr = stream.read()           
@@ -537,39 +563,38 @@ class Stopwatch:
 
     def scramble3(self):
 
-        with open("/home/pi/CubeTimer/scrambles333.txt","a") as scrambleFile:
+        with open(self.resources + "scrambles333.txt","a") as scrambleFile:
             print("Generating new 3x3 scramble")
             scrambleFile.write(scrambler333.get_WCA_scramble() + os.linesep)
             print("Generation complete")
     
     def scramble4(self):
-        with open("/home/pi/CubeTimer/scrambles444.txt","a") as scrambleFile:
+        with open(self.resources+ "scrambles444.txt","a") as scrambleFile:
             print("Generating new 4x4 scramble")
             scrambleFile.write(scrambler444.get_WCA_scramble() + os.linesep)
             print("Generation complete")                                                                                
    
     def scramble2(self):
-        with open("/home/pi/CubeTimer/scrambles222.txt","a") as scrambleFile:
+        with open(self.resources + "scrambles222.txt","a") as scrambleFile:
             print("Generating new 2x2 scramble")
             scrambleFile.write(scrambler222.get_WCA_scramble() + os.linesep)
             print("Generation complete")
 
     def scramble5(self):
-        with open("/home/pi/CubeTimer/scrambles555.txt","a") as scrambleFile:
+        with open(self.resources + "scrambles555.txt","a") as scrambleFile:
             print("Generating new 5x5 scramble")
             scrambleFile.write(scrambler555.get_WCA_scramble() + os.linesep)
             print("Generation complete")
     
     def scramble7(self):
-        with open("/home/pi/CubeTimer/scrambles777.txt","a") as scrambleFile:
+        with open(self.resources + "scrambles777.txt","a") as scrambleFile:
             print("Generating new 7x7 scramble")
             scrambleFile.write(scrambler777.get_WCA_scramble() + os.linesep)
             print("Generation complete")
 
 
 
-    def exit(self):
-        self.solveFile.close()
+    def exit(self): 
         quit()
 
     def shutdown(self):
