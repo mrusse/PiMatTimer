@@ -21,6 +21,7 @@ class Stopwatch:
         self.root.attributes('-fullscreen', True)
         self.root.config(cursor="none",bg = "#BFBFBF") 
 
+        self.inspectionReady = False
         self.lastScramble = ""
         self.system = platform.system()
    
@@ -229,6 +230,29 @@ class Stopwatch:
         
         self.display.after(10, self.run_timer)
 
+    def inspection_timer(self):
+        while(True):
+            self.delta = (time() - self.oldtime)
+            #self.oldtime = time()
+            secstr = int(self.delta)
+            self.display.config(foreground = "red")    
+
+            inspection = 15 - secstr
+
+            self.display.config(text=inspection)
+            if self.button1.is_pressed and self.button2.is_pressed:
+                self.inspectionReady = True
+                self.display.config(foreground = "green") 
+
+            if not self.button1.is_pressed and not self.button2.is_pressed and self.inspectionReady:
+                self.display.config(foreground = "black")
+                return
+
+            if(inspection < 0): 
+                return
+
+            self.display.update()
+
     def check_input(self):
 
         if self.button1.is_pressed and self.button2.is_pressed:
@@ -321,10 +345,10 @@ class Stopwatch:
                 self.button2.wait_for_release()
 
                 self.get_scramble(True)
+                self.oldtime = time()
+                self.inspection_timer()
                 self.display.config(foreground = "black")
                 self.toggle()
-                #self.scramblePic = tk.PhotoImage(file = "self.pathresources/empty.gif")   
- 
 
         self.display.after(10,self.check_input)
 
@@ -407,7 +431,6 @@ class Stopwatch:
                 self.scrambleImage.destroy()
 
                 self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
-                #os.remove("cubeimage.gif")
                 self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
                 self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
             else:
@@ -450,11 +473,8 @@ class Stopwatch:
         if not (len(selectedArray) > 1):
             return
 
-        #print(selectedArray[1])
-        
- 
-        self.solvesList.delete(selection[0])
-            
+
+        self.solvesList.delete(selection[0])            
         lineToDelete = selectedArray[0].strip()
 
         location = self.solvepath + "solves" + self.selectedCube.get() + ".txt"
@@ -620,8 +640,6 @@ class Stopwatch:
             print("Generating new 7x7 scramble")
             scrambleFile.write(scrambler777.get_WCA_scramble() + os.linesep)
             print("Generation complete")
-
-
 
     def exit(self):   
         exit(0)
