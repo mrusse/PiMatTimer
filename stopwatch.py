@@ -43,7 +43,7 @@ class Stopwatch:
         #try to connect to webserver, single retry
         self.ipLabel = "" 
         self.connectionAttempt = False
-        self.connect_webserver()        
+        self.connect_webserver(True)        
 
         #timer label
         self.display = tk.Label(self.root,bg = "#BFBFBF" ,text='0.00', font = ("Arial Bold", 50))
@@ -67,6 +67,7 @@ class Stopwatch:
         self.cubeList = ["3x3x3", "2x2x2" , "4x4x4" , "5x5x5" , "6x6x6" , "7x7x7"]
         self.selectedCube = tk.StringVar(self.root)
         self.selectedCube.set("3x3x3")
+        self.lastSelectedCube = "3x3x3"
  
         self.dropdownLabel = tk.Label(self.root,bg = "#BFBFBF" ,font = ("Arial 13 bold"),text = "Select puzzle type")
 
@@ -185,7 +186,7 @@ class Stopwatch:
         self.root.mainloop()
         
 
-    def connect_webserver(self):
+    def connect_webserver(self,retry):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.connect(("8.8.8.8", 8080))
@@ -212,7 +213,8 @@ class Stopwatch:
                 return
             self.connectionAttempt = True
 
-        self.root.after(3000,self.connect_webserver)
+        if retry:
+            self.root.after(3000,self.connect_webserver)
         
     #toggle the timer on and off
     def toggle(self):
@@ -441,9 +443,9 @@ class Stopwatch:
         self.display.lift()
 
         if self.logo.winfo_ismapped():
-            self.get_scramble(False)
+            if self.selectedCube.get() == "3x3x3" and not self.lastSelectedCube == "3x3x3":
+                self.get_scramble(False)
 
-            if self.selectedCube.get() == "3x3x3":
                 solvestr = self.scramble.cget("text").replace("\n","")
 
                 command = 'python3 ' + self.path + 'imagegen.py' + ' \"' + solvestr  + '\"'
@@ -453,9 +455,14 @@ class Stopwatch:
                 self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
                 self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
                 self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
-            else:
-                self.scrambleImage.place_forget()     
+            elif not self.selectedCube.get() == "3x3x3":
+                self.scrambleImage.place_forget()
+                self.get_scramble(False)
+     
             print(self.selectedCube.get())
+
+        if self.ipLabel.cget("text") == "No internet connection":
+            self.connect_webserver(False)
 
         self.backButton.place_forget()
         self.solvesList.pack_forget()
@@ -473,6 +480,8 @@ class Stopwatch:
         self.sleepButton.place_forget()
 
     def view_settings(self):
+        self.lastSelectedCube = self.selectedCube.get()
+ 
         self.exit.place(relx = 0.28, rely = 0.92, anchor = 'center') 
         self.sleepButton.place(relx = 0.45, rely = 0.92, anchor = 'center')  
         self.shutdown.place(relx = 0.85, rely = 0.92, anchor = 'center')
