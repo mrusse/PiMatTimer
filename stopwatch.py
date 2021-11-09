@@ -470,6 +470,7 @@ class Stopwatch:
         self.inspectionDropdown.place_forget()
         self.inspectionLabel.place_forget()
         self.bar.place_forget()
+        self.sleepButton.place_forget()
 
     def view_settings(self):
         self.exit.place(relx = 0.28, rely = 0.92, anchor = 'center') 
