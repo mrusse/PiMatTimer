@@ -458,11 +458,12 @@ class Stopwatch:
             elif not self.selectedCube.get() == "3x3x3":
                 self.scrambleImage.place_forget()
                 self.get_scramble(False)
-     
-            print(self.selectedCube.get())
 
-        if self.ipLabel.cget("text") == "No internet connection":
-            self.connect_webserver(False)
+            if self.ipLabel['text'] == "No internet connection":
+                self.ipLabel.destroy()
+                self.connect_webserver(False)
+        
+        print(self.selectedCube.get())
 
         self.backButton.place_forget()
         self.solvesList.pack_forget()
