@@ -58,6 +58,10 @@ class Stopwatch:
         #logo label
         logoImage = tk.PhotoImage(file = self.resources + "logo.gif")
         self.logo = tk.Label(self.root,bg = "#BFBFBF" ,image = logoImage)
+        
+        #divider label
+        barImage = tk.PhotoImage(file = self.resources + "bar.gif")
+        self.bar = tk.Label(self.root,bg = "#BFBFBF" ,image = barImage)
                
         #cube dropdown
         self.cubeList = ["3x3x3", "2x2x2" , "4x4x4" , "5x5x5" , "6x6x6" , "7x7x7"]
@@ -67,6 +71,15 @@ class Stopwatch:
         self.dropdownLabel = tk.Label(self.root,bg = "#BFBFBF" ,font = ("Arial 13 bold"),text = "Select puzzle type")
 
         self.cubeDropdown = tk.OptionMenu(self.root,self.selectedCube, *self.cubeList)
+
+        #inspection dropdown
+        self.inspectionList = ["No ", "Yes"]
+        self.selectedInspection = tk.StringVar(self.root)
+        self.selectedInspection.set("No ")
+ 
+        self.inspectionLabel = tk.Label(self.root,bg = "#BFBFBF" ,font = ("Arial 13 bold"),text = "Use WCA Inspection")
+
+        self.inspectionDropdown = tk.OptionMenu(self.root,self.selectedInspection, *self.inspectionList)
 
         #listbox and scrollbar
         self.scrollbar = tk.Scrollbar(self.root)
@@ -95,8 +108,12 @@ class Stopwatch:
         #exit button
         self.exit = tk.Button(self.root,text = 'Exit',font = ("Arial 12 bold"),command=self.exit)  
 
+        #sleep button
+        self.sleepButton = tk.Button(self.root,text = 'Sleep',font = ("Arial 12 bold"),command=self.sleep_display)  
+
+
         #shutdown button
-        self.shutdown = tk.Button(self.root,text = 'Shutdown',font = ("Arial 12 bold"),command=self.shutdown)  
+        self.shutdown = tk.Button(self.root,text = 'Shutdown',font = ("Arial 12 bold"),fg='#F80000',command=self.shutdown)  
 
         #get first scramble from file then delete it from the file then generate new scramble in a new thread
         stream = os.popen('head -n 1 ' + self.resources + 'scrambles333.txt')
@@ -345,8 +362,11 @@ class Stopwatch:
                 self.button2.wait_for_release()
 
                 self.get_scramble(True)
-                self.oldtime = time()
-                self.inspection_timer()
+
+                if self.selectedInspection.get() == "Yes":
+                    self.oldtime = time()
+                    self.inspection_timer()
+
                 self.display.config(foreground = "black")
                 self.toggle()
 
@@ -447,15 +467,22 @@ class Stopwatch:
         self.logo.place_forget()
         self.dropdownLabel.place_forget()
         self.ipLabel.place_forget()
- 
+        self.inspectionDropdown.place_forget()
+        self.inspectionLabel.place_forget()
+        self.bar.place_forget()
+
     def view_settings(self):
-        self.exit.place(relx = 0.25, rely = 0.92, anchor = 'center') 
-        self.shutdown.place(relx = 0.44, rely = 0.92, anchor = 'center')
-        self.backButton.place(relx = 0.1, rely = 0.92, anchor = 'center')
-        self.cubeDropdown.place(relx = 0.69, rely = 0.47, anchor = 'center')
+        self.exit.place(relx = 0.28, rely = 0.92, anchor = 'center') 
+        self.sleepButton.place(relx = 0.45, rely = 0.92, anchor = 'center')  
+        self.shutdown.place(relx = 0.85, rely = 0.92, anchor = 'center')
+        self.backButton.place(relx = 0.11, rely = 0.92, anchor = 'center')
+        self.cubeDropdown.place(relx = 0.69, rely = 0.18, anchor = 'center')
         self.logo.place(relx = 0.28, rely = 0.5, anchor = 'center')
-        self.dropdownLabel.place(relx = 0.76, rely = 0.345, anchor = 'center')
+        self.dropdownLabel.place(relx = 0.76, rely = 0.045, anchor = 'center')
         self.ipLabel.place(relx = 0.28, rely = 0.08, anchor = 'center')
+        self.inspectionDropdown.place(relx = 0.67, rely = 0.48, anchor = 'center')
+        self.inspectionLabel.place(relx = 0.78, rely = 0.345, anchor = 'center')
+        self.bar.place(relx = 0, rely = 0.82, anchor = tk.W)
 
         self.ao5Label.place_forget()
         self.ao12Label.place_forget()
@@ -640,6 +667,11 @@ class Stopwatch:
             print("Generating new 7x7 scramble")
             scrambleFile.write(scrambler777.get_WCA_scramble() + os.linesep)
             print("Generation complete")
+
+    def sleep_display(self):
+        os.system("xset s 1")
+        self.root.after(1000)
+        os.system("xset s 0")
 
     def exit(self):   
         exit(0)
