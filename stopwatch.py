@@ -82,6 +82,12 @@ class Stopwatch:
 
         self.inspectionDropdown = tk.OptionMenu(self.root,self.selectedInspection, *self.inspectionList)
 
+        if os.path.isfile(self.resources + "settings.txt"):
+            with open(self.resources + "settings.txt") as settingsFile:
+                options = settingsFile.readlines()
+                self.selectedCube.set(options[0].strip())
+                self.selectedInspection.set(options[1].strip())
+
         #listbox and scrollbar
         self.scrollbar = tk.Scrollbar(self.root)
         self.solvesList = tk.Listbox(self.root, height = 14, width = 58, yscrollcommand = self.scrollbar.set,font = ("Arial 11 bold")) 
@@ -117,26 +123,47 @@ class Stopwatch:
         self.shutdown = tk.Button(self.root,text = 'Shutdown',font = ("Arial 12 bold"),fg='#F80000',command=self.shutdown)  
 
         #get first scramble from file then delete it from the file then generate new scramble in a new thread
-        stream = os.popen('head -n 1 ' + self.resources + 'scrambles333.txt')
-        scramblestr = stream.read() 
-        os.system('tail -n +2 "' + self.resources + 'scrambles333.txt" > "' + self.resources + 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles333.txt"')       
-        _thread.start_new_thread(self.scramble3,())
+        self.scramble = tk.Label(self.root,bg = "#BFBFBF", text= "", font = ("Arial 15 bold")) 
+        if self.selectedCube.get() == "4x4x4" or self.selectedCube.get() == "5x5x5": 
+            self.scramble.place(relx = 0.5, rely = 0.16, anchor = 'center')
+        if self.selectedCube.get() == "7x7x7" or self.selectedCube.get() == "6x6x6":
+            self.scramble.place(relx = 0.5, rely = 0.2, anchor = 'center')
+        if self.selectedCube.get() == "3x3x3" or self.selectedCube.get() == "2x2x2":
+            self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
+       
+        if self.selectedCube.get() == "3x3x3": 
+            #get first scramble from file then delete it from the file then generate new scramble in a new thread
+            stream = os.popen('head -n 1 ' + self.resources + 'scrambles333.txt')
+            scramblestr = stream.read() 
+            os.system('tail -n +2 "' + self.resources + 'scrambles333.txt" > "' + self.resources + 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles333.txt"')       
+            _thread.start_new_thread(self.scramble3,())
         
         
-        #scrambleimage label
+            #scrambleimage label
 
-        command = 'python3 ' + self.path + 'imagegen.py' + ' \"' + scramblestr + '\"'
-        os.system(command)        
+            command = 'python3 ' + self.path + 'imagegen.py' + ' \"' + scramblestr + '\"'
+            os.system(command)    
 
-        self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
-        #os.remove("cubeimage.gif")
-        self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
-        self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
-    
-      
+            scramblestr = self.split_scramble(scramblestr,2) 
+            self.scramble.config(text = scramblestr,font = ("Arial 15 bold"))
+
+            self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
+            #os.remove("cubeimage.gif")
+            self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
+            self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+        else:
+            self.get_scramble(False)       
+
+            self.scramblePic = tk.PhotoImage(file = self.resources + "empty.gif" )   
+            self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
+            self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+ 
+        self.display.lift()
+
+     
         #fill up listbox and get average
-        if os.path.isfile(self.solvepath + "solves3x3x3.txt"):
-            solveFile = open(self.solvepath + "solves3x3x3.txt")
+        if os.path.isfile(self.solvepath + "solves" + self.selectedCube.get() + ".txt"):
+            solveFile = open(self.solvepath + "solves" + self.selectedCube.get() + ".txt")
             solveArray = []
     
             x = 1
@@ -161,20 +188,6 @@ class Stopwatch:
             self.set_average(5) 
             self.set_average(12)             
  
-        #scramble label
-        #split scramble in half and put second half on new line to increase readability 
-        middle = int(len(scramblestr)/2)
-
-        if scramblestr[middle] == " ":
-            scramblestr = scramblestr[:middle] +  "\n" + scramblestr[middle:]
-        elif scramblestr[middle + 1] == " ":
-            scramblestr = scramblestr[:middle + 1] +  "\n" + scramblestr[middle + 1:]
-        else:
-            scramblestr = scramblestr[:middle - 1] +  "\n" + scramblestr[middle -1 :]
-
-        self.scramble = tk.Label(self.root,bg = "#BFBFBF", text= scramblestr, font = ("Arial 15 bold")) 
-        self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
-
         #GPIO pins 19 and 26
         self.button1 = Button(19)
         self.button2 = Button(26)
@@ -214,7 +227,7 @@ class Stopwatch:
             self.connectionAttempt = True
 
         if retry:
-            self.root.after(3000,self.connect_webserver)
+            self.root.after(3000,self.connect_webserver(True))
         
     #toggle the timer on and off
     def toggle(self):
@@ -249,7 +262,7 @@ class Stopwatch:
         
         self.display.after(10, self.run_timer)
 
-    def inspection_timer(self):
+    def inspection_timer(self): 
         while(True):
             self.delta = (time() - self.oldtime)
             #self.oldtime = time()
@@ -340,7 +353,7 @@ class Stopwatch:
                     self.scramble.place(relx = 0.5, rely = 0.16, anchor = 'center')
                 if self.selectedCube.get() == "3x3x3" or self.selectedCube.get() == "2x2x2":
                     self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')       
-                if self.selectedCube.get() == "7x7x7":
+                if self.selectedCube.get() == "7x7x7" or self.selectedCube.get() == "6x6x6":
                     self.scramble.place(relx = 0.5, rely = 0.2, anchor = 'center')      
                 
                 self.button1.wait_for_release()
@@ -366,7 +379,9 @@ class Stopwatch:
                 self.get_scramble(True)
 
                 if self.selectedInspection.get() == "Yes":
+                    print("Inspecting...")
                     self.oldtime = time()
+                    self.inspectionReady = False
                     self.inspection_timer()
 
                 self.display.config(foreground = "black")
@@ -430,7 +445,7 @@ class Stopwatch:
 
         if self.selectedCube.get() == "4x4x4" or self.selectedCube.get() == "5x5x5": 
             self.scramble.place(relx = 0.5, rely = 0.16, anchor = 'center')
-        if self.selectedCube.get() == "7x7x7":
+        if self.selectedCube.get() == "7x7x7" or self.selectedCube.get() == "6x6x6":
             self.scramble.place(relx = 0.5, rely = 0.2, anchor = 'center')
         if self.selectedCube.get() == "3x3x3" or self.selectedCube.get() == "2x2x2":
             self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
@@ -438,11 +453,17 @@ class Stopwatch:
         self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
         self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
         self.settingsButton.place(relx = 0.08, rely = 0.92, anchor = 'center')
-        self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+        
+        if self.selectedCube.get() == "3x3x3":
+            self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
     
         self.display.lift()
 
         if self.logo.winfo_ismapped():
+    
+            with open(self.resources + "settings.txt", "w") as settingFile:
+                settingFile.write(self.selectedCube.get() + "\n" + self.selectedInspection.get())
+
             if self.selectedCube.get() == "3x3x3" and not self.lastSelectedCube == "3x3x3":
                 self.get_scramble(False)
 
@@ -462,7 +483,47 @@ class Stopwatch:
             if self.ipLabel['text'] == "No internet connection":
                 self.ipLabel.destroy()
                 self.connect_webserver(False)
-        
+            
+            self.solvesList.delete(0,tk.END)
+            location = self.solvepath + "solves" + self.selectedCube.get() + ".txt"
+
+            if os.path.isfile(location):
+                solveFile = open(location)
+                solveArray = []
+    
+                x = 1
+
+                for line in solveFile:
+                    if x < 10:
+                        solveArray.append("  " + str(x) + ") " + str(line).strip())
+                    else:
+                        solveArray.append(str(x) + ") " + str(line).strip())
+                    x += 1
+    
+                solveArray.reverse()
+    
+                for i in range(len(solveArray)):
+                    current = solveArray[i].split(" - ")
+                    self.solvesList.insert(tk.END,current[0])
+                    if len(current[1]) > 70:
+                        lines = int(len(current[1]) / 40)
+                        current[1] = self.split_scramble(current[1],lines)
+                        splitScramble = current[1].split("\n")
+                    
+                        for i in range(len(splitScramble)):
+                            self.solvesList.insert(tk.END,splitScramble[i])
+ 
+                    else:
+                        self.solvesList.insert(tk.END,current[1])
+                    self.solvesList.insert(tk.END," ") 
+
+                solveFile.close() 
+
+            self.set_average(5)
+            self.set_average(12)
+            self.display.update_idletasks()
+
+  
         print(self.selectedCube.get())
 
         self.backButton.place_forget()
@@ -531,8 +592,7 @@ class Stopwatch:
         self.view_solves()
         self.solvesList.see(selection[0])
             
-    def set_average(self, number):
-        
+    def set_average(self, number): 
         solveNum = 0
 
         for i in range(self.solvesList.size()):
@@ -568,16 +628,31 @@ class Stopwatch:
                     total += aoArray[j]
                     
             average = '%.2f' % (total / (number - 2))
-            if number == 5:
-                self.ao5Label.config(text= "ao5: " + str(average)) 
-            if number == 12:
-                self.ao12Label.config(text= "ao12: " + str(average)) 
+            minstr = ((total / (number - 2))/60)
+
+            if(int(minstr) > 0):
+                secstr = '%.2f' % (float(average) - (int(minstr) * 60))
+                if (float(average) - (int(minstr) * 60) )< 10: 
+                    if number == 5:
+                        self.ao5Label.config(text= "ao5: " + str(int(minstr)) + ":0" + str(secstr)) 
+                    if number == 12:
+                        self.ao12Label.config(text= "ao12: " + str(int(minstr)) + ":0" + str(secstr))
+                else:
+                    if number == 5:
+                        self.ao5Label.config(text= "ao5: " + str(int(minstr)) + ":" + str(secstr)) 
+                    if number == 12:
+                        self.ao12Label.config(text= "ao12: " + str(int(minstr)) + ":" + str(secstr))
+            else:
+                if number == 5:
+                    self.ao5Label.config(text= "ao5: " + str(average)) 
+                if number == 12:
+                    self.ao12Label.config(text= "ao12: " + str(average)) 
         else:
             if number == 5:
                 self.ao5Label.config(text= "ao5: ") 
             if number == 12:
                 self.ao12Label.config(text= "ao12: ") 
-
+         
     def get_scramble(self,getImage):
 
         if self.selectedCube.get() == "3x3x3":
@@ -619,7 +694,17 @@ class Stopwatch:
             scramblestr = self.split_scramble(scramblestr,4)            
 
             self.scramble.config(text = scramblestr,font = ("Arial 12 bold"))
-    
+        
+        if self.selectedCube.get() == "6x6x6":
+            stream = os.popen('head -n 1 ' + self.resources + 'scrambles666.txt')
+            os.system('tail -n +2 "' + self.resources+ 'scrambles666.txt" > "' + self.resources+ 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles666.txt"')       
+            _thread.start_new_thread(self.scramble6, ())
+            
+            scramblestr = stream.read()           
+            scramblestr = self.split_scramble(scramblestr,7)
+ 
+            self.scramble.config(text = scramblestr,font = ("Arial 10 bold"))
+
         if self.selectedCube.get() == "7x7x7":
             stream = os.popen('head -n 1 ' + self.resources + 'scrambles777.txt')
             os.system('tail -n +2 "' + self.resources+ 'scrambles777.txt" > "' + self.resources+ 'tmp.txt" && mv "' + self.resources + 'tmp.txt" "' + self.resources + 'scrambles777.txt"')       
@@ -653,31 +738,37 @@ class Stopwatch:
         with open(self.resources + "scrambles333.txt","a") as scrambleFile:
             print("Generating new 3x3 scramble")
             scrambleFile.write(scrambler333.get_WCA_scramble() + os.linesep)
-            print("Generation complete")
+            print("3x3 scramble generation complete")
     
     def scramble4(self):
         with open(self.resources+ "scrambles444.txt","a") as scrambleFile:
             print("Generating new 4x4 scramble")
             scrambleFile.write(scrambler444.get_WCA_scramble() + os.linesep)
-            print("Generation complete")                                                                                
+            print("4x4 scramble generation complete")                                                                                
    
     def scramble2(self):
         with open(self.resources + "scrambles222.txt","a") as scrambleFile:
             print("Generating new 2x2 scramble")
             scrambleFile.write(scrambler222.get_WCA_scramble() + os.linesep)
-            print("Generation complete")
+            print("2x2 scramble generation complete")
 
     def scramble5(self):
-        with open(self.resources + "scrambles555.txt","a") as scrambleFile:
+        with open(self.resources + "scrambles555.txt","a") as scramblefile:
             print("Generating new 5x5 scramble")
-            scrambleFile.write(scrambler555.get_WCA_scramble() + os.linesep)
-            print("Generation complete")
+            scramblefile.write(scrambler555.get_wca_scramble() + os.linesep)
+            print("5x5 scramble generation complete")
+   
+    def scramble6(self):
+        with open(self.resources + "scrambles666.txt","a") as scramblefile:
+            print("Generating new 6x6 scramble")
+            scramblefile.write(scrambler666.get_WCA_scramble() + os.linesep)
+            print("6x6 scramble generation complete")
     
     def scramble7(self):
         with open(self.resources + "scrambles777.txt","a") as scrambleFile:
             print("Generating new 7x7 scramble")
             scrambleFile.write(scrambler777.get_WCA_scramble() + os.linesep)
-            print("Generation complete")
+            print("7x7 scramble generation complete")
 
     def sleep_display(self):
         os.system("xset s 1")
