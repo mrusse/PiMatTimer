@@ -317,32 +317,35 @@ class Stopwatch:
                 self.display.update_idletasks()
 
                 scramblestr = self.scramble.cget("text").replace("\n","")
-                self.scrambleImage.destroy()
+                #self.scrambleImage.destroy()
             
                 #open the image gif as binary data and read in the scramble that has been appended in the 
                 #image generation program. if the scramble is the same as the current scramble then it will
                 #show the image.
-                try: 
-                    with open(self.resources + "cubelarge.gif", "rb") as last:
-                        linelist = last.readlines()
-                        last = linelist[len(linelist)-1].decode('ascii').replace("\n","")
-                        print("image scramble: " + str(last) + "\ncurrent scramble: " + scramblestr) 
+                if self.selectedCube.get() == "3x3x3":
+                    try:
+                        with open(self.resources + "cubelarge.gif", "rb") as last:
+                            linelist = last.readlines()
+                            last = linelist[len(linelist)-1].decode('ascii').replace("\n","")
+                            print("image scramble: " + str(last) + "\ncurrent scramble: " + scramblestr) 
 
-                    if last == scramblestr:
-                        self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
-                    else:
-                        self.scramblePic = tk.PhotoImage(file = self.resources + "empty.gif")   
-                    self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
-                    if self.selectedCube.get() == "3x3x3":
-                        self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
-                except:
-                    self.scramblePic = tk.PhotoImage(file = self.resources + "empty.gif")
-                    self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
-                    if self.selectedCube.get() == "3x3x3":
-                        self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+                        if last == scramblestr:
+                            print("Scramble and image are equal")
+                            self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
+                            self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
+                            self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+                        else:
+                            self.scramblePic = tk.PhotoImage(file = self.resources + "empty.gif")    
+                    except:
+                        self.scramblePic = tk.PhotoImage(file = self.resources + "empty.gif")
+                        self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
+                        #if self.selectedCube.get() == "3x3x3":
+                        #    self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+                    
+                        command = "python3 "+ self.path + "imagegen.py" + " \"" + scramblestr + "\""
+                        _thread.start_new_thread(os.system,(command,))        
+                        print("----------stop spamming so hard mitch----------")
 
-                    print("----------stop spamming so hard mitch----------")
-   
                 self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
                 self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center') 
                 self.infoButton.place(relx = 0.24, rely = 0.92, anchor = 'center') 
@@ -386,6 +389,30 @@ class Stopwatch:
 
                 self.display.config(foreground = "black")
                 self.toggle()
+
+        
+
+        if self.selectedCube.get() == "3x3x3" and not self.scrambleImage.winfo_ismapped() and self.scramble.winfo_ismapped():
+
+            scramblestr = self.scramble.cget("text").replace("\n","")
+            #self.scrambleImage.destroy()
+
+            try: 
+                with open(self.resources + "cubelarge.gif", "rb") as last:
+                    linelist = last.readlines()
+                    last = linelist[len(linelist)-1].decode('ascii').replace("\n","")
+                    #print("second image scramble: " + str(last) + "\ncurrent scramble: " + scramblestr) 
+
+                if last == scramblestr:
+                    self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
+                    self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic) 
+                    if self.scramble.winfo_ismapped():
+                        self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
+                else:
+                    self.scramblePic = tk.PhotoImage(file = self.resources + "empty.gif")   
+            except:
+                self.scramblePic = tk.PhotoImage(file = self.resources + "empty.gif")
+                self.scrambleImage = tk.Label(self.root,bg = "#BFBFBF" ,image = self.scramblePic)
 
         self.display.after(10,self.check_input)
 
@@ -524,7 +551,7 @@ class Stopwatch:
             self.display.update_idletasks()
 
   
-        print(self.selectedCube.get())
+        #print(self.selectedCube.get())
 
         self.backButton.place_forget()
         self.solvesList.pack_forget()
@@ -755,7 +782,7 @@ class Stopwatch:
     def scramble5(self):
         with open(self.resources + "scrambles555.txt","a") as scramblefile:
             print("Generating new 5x5 scramble")
-            scramblefile.write(scrambler555.get_wca_scramble() + os.linesep)
+            scramblefile.write(scrambler555.get_WCA_scramble() + os.linesep)
             print("5x5 scramble generation complete")
    
     def scramble6(self):
