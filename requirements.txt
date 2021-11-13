@@ -1,0 +1,7 @@
+appdirs==1.4.0
+packaging==16.8
+PyExecJS==1.5.1
+pyparsing==2.1.10
+six==1.10.0
+gpiozero
+termcolor
