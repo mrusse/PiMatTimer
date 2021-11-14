@@ -11,8 +11,8 @@ cube = [["W","W","W","W","W","W","W","W","W"],\
 
 scramble = str(sys.argv[1])
 
-if os.path.isfile("/home/pi/CubeTimer/resources/cubelarge.gif"):
-    os.remove("/home/pi/CubeTimer/resources/cubelarge.gif")
+if os.path.isfile("/home/pi/PiMatTimer/resources/cubelarge.gif"):
+    os.remove("/home/pi/PiMatTimer/resources/cubelarge.gif")
 
 print("Generating image for: " + scramble)
  
@@ -320,7 +320,7 @@ def draw(cube):
             #if img2.get
             
     
-    img2.save('/home/pi/CubeTimer/resources/cubelarge.gif')
+    img2.save('/home/pi/PiMatTimer/resources/cubelarge.gif')
 
 
 #scramble = "R2 U R' U2 B' L F2 L' B2 F' R D2 U2 R2 B2 R2 B2 L' D' U L' B U2 R' U F' L B' R' U2"
@@ -335,7 +335,7 @@ for i in range(len(splitScramble)):
     move(splitScramble[i])
     draw(cube)
 
-with open("/home/pi/CubeTimer/resources/cubelarge.gif", "a") as last:
+with open("/home/pi/PiMatTimer/resources/cubelarge.gif", "a") as last:
     last.write("\n" + scramble) 
 
 
