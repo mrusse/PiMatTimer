@@ -15,7 +15,21 @@ git clone git@github.com:mrusse/PiMatTimer --recurse-submodules
 
 Then install the requirments
 ```
-python -m pip3 install -r requirements.txt
+python -m pip install -r requirements.txt
+```
+You could now run the program by doing ```python3 timer.py``` however you should setup the program to run at startup if you are using the pi as a dedicated timer.
+
+You can use autostart to do this on the pi
+```
+mkdir /home/pi/.config/autostart
+nano /home/pi/.config/autostart/timer.desktop
+```
+Then put this in the ```timer.desktop``` file.
+```
+[Desktop Entry]
+Type=Application
+Name=Timer
+Exec=/usr/bin/python3 /home/pi/PiMatTimer/timer.py
 ```
 
 
