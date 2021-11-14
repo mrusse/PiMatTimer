@@ -310,11 +310,11 @@ class Stopwatch:
                 self.solvesList.insert(0, ") " + lastTime) 
                 self.solvesList.insert(1,self.lastScramble.replace("\n", ""))
                 self.solvesList.insert(2," ")
+                
+                self.display.update_idletasks()
 
                 self.set_average(5)                                  
                 self.set_average(12)
-
-                self.display.update_idletasks()
 
                 scramblestr = self.scramble.cget("text").replace("\n","")
                 #self.scrambleImage.destroy()
@@ -379,7 +379,7 @@ class Stopwatch:
                 self.button1.wait_for_release()
                 self.button2.wait_for_release()
 
-                self.get_scramble(True)
+                _thread.start_new_thread(self.get_scramble,(True,))
 
                 if self.selectedInspection.get() == "Yes":
                     print("Inspecting...")
