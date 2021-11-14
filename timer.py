@@ -17,7 +17,7 @@ class Stopwatch:
     def __init__(self):
 
         self.root = tk.Tk()
-        self.root.title('CubeTimer')
+        self.root.title('PiMatTimer')
         self.root.attributes('-fullscreen', True)
         self.root.config(cursor="none",bg = "#BFBFBF") 
 
@@ -25,8 +25,8 @@ class Stopwatch:
         self.lastScramble = ""
         self.system = platform.system()
    
-        if os.path.isdir("/home/pi/CubeTimer/"):
-            self.path = "/home/pi/CubeTimer/"
+        if os.path.isdir("/home/pi/PiMatTimer/"):
+            self.path = "/home/pi/PiMatTimer/"
             self.resources = self.path + "resources/"
             self.solvepath = self.path + "solves/"
         else:
