@@ -48,9 +48,29 @@ It is done this way since there is a delay in generating these random state scra
 buffer method makes the experience seamless.
 
 **Main timer screen with 3x3 scramble and image.**
-![Main 3x3 screen](https://i.imgur.com/ArSZ5a5.png)
 
-**Solves list screen which lists all your solves in the current session**
+![Main 3x3 screen](https://i.imgur.com/6rO6vGL.png)
+
+###### Solves list screen which lists all your solves in the current session
 
 You can select a time and click ```Delete Selected Time``` to remove that solve. Each session (2x2 - 7x7) will store their times seperatly.
-![3x3 solves screen](https://i.imgur.com/a2vapd5.png)
+
+![3x3 solves screen](https://i.imgur.com/FS5S4Jt.png)
+
+**Settings menu**
+
+In the settings you can change your puzzle type and turn on or off WCA inspection. You also have access to some system controls here such as the option to shutdown the pi or exit the program.
+
+If the pi has a wifi connection it will also show the link to a local webserver where you can export your solves or download a current screenshot of the program. (View image below)
+
+![Settings menu](https://i.imgur.com/ZZB3fiO.png)
+
+**Local webserver**
+
+![Webserver](https://i.imgur.com/E1XCaKx.png)
+
+**Example of a 5x5 session and solves**
+
+![5x5 session](https://i.imgur.com/xjU86jv.png)
+
+![5x5 solves](https://i.imgur.com/nuAKNQR.png)
