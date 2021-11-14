@@ -1,5 +1,5 @@
 # PiMat Timer
-A full featured Rubik's cube timer made to run on a Raspberry Pi running Raspberry Pi OS. Inspiration taken from the stackmat timer for the
+A full-featured Rubik's cube timer made to run on a Raspberry Pi running Raspberry Pi OS. Inspiration taken from the stackmat timer for the
 hardware and from csTimer for the software.
 
 # Hardware
