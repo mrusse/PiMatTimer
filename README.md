@@ -18,6 +18,12 @@ Then install the requirments
 ```
 python -m pip install -r requirements.txt
 ```
+
+The program also requires nodejs so install that on the pi if you don't have it already
+```
+sudo apt-get install nodejs
+```
+
 You could now run the program by doing ```python3 timer.py``` however you should setup the program to run at startup if you are using the pi as a dedicated timer.
 
 You can use autostart to do this on the pi
