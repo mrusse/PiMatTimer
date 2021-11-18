@@ -492,12 +492,21 @@ class Stopwatch:
                 settingFile.write(self.selectedCube.get() + "\n" + self.selectedInspection.get())
 
             if self.selectedCube.get() == "3x3x3" and not self.lastSelectedCube == "3x3x3":
-                self.get_scramble(False)
+                #self.get_scramble(False)
 
-                solvestr = self.scramble.cget("text").replace("\n","")
+                #solvestr = self.scramble.cget("text").replace("\n","")
 
-                command = 'python3 ' + self.path + 'imagegen.py' + ' \"' + solvestr  + '\"'
-                os.system(command)
+                #command = 'python3 ' + self.path + 'imagegen.py' + ' \"' + solvestr  + '\"'
+                #os.system(command)
+                
+                with open(self.resources + "cubelarge.gif", "rb") as last:
+                    linelist = last.readlines()
+                    last = linelist[len(linelist)-1].decode('ascii')
+                    print("image scramble: " + str(last)) 
+
+                scramblestr = self.split_scramble(last,2) 
+                self.scramble.config(text = scramblestr, font = ("Arial 15 bold"))
+
                 self.scrambleImage.destroy()
 
                 self.scramblePic = tk.PhotoImage(file = self.resources + "cubelarge.gif")
@@ -728,7 +737,7 @@ class Stopwatch:
             _thread.start_new_thread(self.scramble6, ())
             
             scramblestr = stream.read()           
-            scramblestr = self.split_scramble(scramblestr,7)
+            scramblestr = self.split_scramble(scramblestr,6)
  
             self.scramble.config(text = scramblestr,font = ("Arial 10 bold"))
 
