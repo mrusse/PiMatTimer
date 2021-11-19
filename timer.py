@@ -104,7 +104,14 @@ class Stopwatch:
         #view solves button
         infoImage = tk.PhotoImage(file = self.resources + "infoicon.gif") 
         self.infoButton = tk.Button(self.root,image = infoImage,highlightthickness = 0,command=self.view_solves)
-        self.infoButton.place(relx = 0.24, rely = 0.92, anchor = 'center') 
+        self.infoButton.place(relx = 0.195, rely = 0.92, anchor = 'center') 
+
+        #view records button
+        recordImage = tk.PhotoImage(file = self.resources + "recordicon.gif") 
+        self.recordButton = tk.Button(self.root,image = recordImage,highlightthickness = 0,command=self.view_records)
+        self.recordButton.place(relx = 0.3, rely = 0.92, anchor = 'center') 
+
+
 
         #back button
         self.backButton = tk.Button(self.root,text = 'Back',font = ("Arial 12 bold"),command=self.view_timer)  
@@ -466,6 +473,7 @@ class Stopwatch:
         self.display.place_forget()
         self.settingsButton.place_forget()
         self.scrambleImage.place_forget()
+        self.recordButton.place_forget()
 
     def view_timer(self):
         self.display.place(relx = 0.5, rely = 0.48, anchor = 'center')
@@ -476,10 +484,11 @@ class Stopwatch:
             self.scramble.place(relx = 0.5, rely = 0.2, anchor = 'center')
         if self.selectedCube.get() == "3x3x3" or self.selectedCube.get() == "2x2x2":
             self.scramble.place(relx = 0.5, rely = 0.13, anchor = 'center')
-        self.infoButton.place(relx = 0.25, rely = 0.92, anchor = 'center') 
+        self.infoButton.place(relx = 0.195, rely = 0.92, anchor = 'center') 
+        self.recordButton.place(relx = 0.3, rely = 0.92, anchor = 'center')
         self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
         self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center')
-        self.settingsButton.place(relx = 0.08, rely = 0.92, anchor = 'center')
+        self.settingsButton.place(relx = 0.09, rely = 0.92, anchor = 'center')
         
         if self.selectedCube.get() == "3x3x3":
             self.scrambleImage.place(relx = 0.97, rely = 0.97, anchor = tk.SE)
@@ -599,6 +608,97 @@ class Stopwatch:
         self.display.place_forget()
         self.settingsButton.place_forget()
         self.scrambleImage.place_forget()
+        self.recordButton.place_forget()
+
+    def view_records(self): 
+        location = self.solvepath + "solves" + self.selectedCube.get() + ".txt"
+        self.backButton.place(relx = 0.11, rely = 0.92, anchor = 'center')
+
+
+        if os.path.isfile(location):
+            solveFile = open(location)
+            solveArray = []
+            ao5Array = []
+            ao12Array = []
+
+            for line in solveFile:
+                solveArray.append(str(line).split(" - ")[0].strip())
+            solveArray.reverse()   
+        
+            for i in range (len(solveArray)):
+                if len(solveArray) > 4: 
+                    ao5Array.append(self.get_average(solveArray,5))
+   
+                if len(solveArray) > 11:
+                    ao12Array.append(self.get_average(solveArray,12))
+                
+                if len(solveArray) < 5:
+                    break
+                
+                solveArray.pop(0)
+
+            sortedArray = []
+            solveFile.seek(0, 0)            
+
+            for line in solveFile:
+                sortedArray.append(str(line).split(" - ")[0].strip())
+    
+            sortedArray.sort()
+            solveFile.close()        
+
+        ao5Array.sort()
+        ao12Array.sort()
+        print(ao5Array[0])
+        print(ao12Array[0])        
+
+        print(sortedArray[0])
+
+        self.ao5Label.place_forget()
+        self.ao12Label.place_forget()
+        self.scramble.place_forget()
+        self.infoButton.place_forget() 
+        self.display.place_forget()
+        self.settingsButton.place_forget()
+        self.scrambleImage.place_forget()
+        self.recordButton.place_forget()
+   
+
+    def get_average(self,solves,number):
+        aoArray = []
+        for j in range(number):
+            if "." in solves[j]:
+                if ":" in solves[j]:
+                    minute = solves[j].split(":")
+                    secondsToAdd = float(float(minute[0]) * 60)
+                    aoArray.append(float(float(minute[1]) + secondsToAdd))
+                else:
+                    aoArray.append(float(solves[j]))
+            if len(aoArray) == number:
+                break
+                                               
+        top = aoArray[0]
+        topIndex = 0
+        bot = aoArray[0]
+        botIndex = 0
+        total = 0
+ 
+        for k in range(number):
+            if aoArray[k] > top:
+                top = aoArray[k]
+                topIndex = k
+            if aoArray[k] < bot:
+                bot = aoArray[k]
+                botIndex = k
+        #print("Top: " + str(top))
+        #print("Bot: " + str(bot))            
+
+        for k in range(number):
+            if not k == topIndex and not k == botIndex:
+                #print(aoArray[k])
+                total += aoArray[k]
+                    
+        return (total / (number - 2))
+
 
     def remove_selected(self):
         
@@ -688,7 +788,8 @@ class Stopwatch:
                 self.ao5Label.config(text= "ao5: ") 
             if number == 12:
                 self.ao12Label.config(text= "ao12: ") 
-         
+   
+     
     def get_scramble(self,getImage):
 
         if self.selectedCube.get() == "3x3x3":
