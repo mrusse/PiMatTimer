@@ -366,10 +366,11 @@ class Stopwatch:
                         command = "python3 "+ self.path + "imagegen.py" + " \"" + scramblestr + "\""
                         _thread.start_new_thread(os.system,(command,))        
                         print("----------stop spamming so hard mitch----------")
-
+                
+                self.recordButton.place(relx = 0.3, rely = 0.92, anchor = 'center')
                 self.ao5Label.place(relx = 0.5, rely = 0.64, anchor = 'center')
                 self.ao12Label.place(relx = 0.5, rely = 0.72, anchor = 'center') 
-                self.infoButton.place(relx = 0.24, rely = 0.92, anchor = 'center') 
+                self.infoButton.place(relx = 0.195, rely = 0.92, anchor = 'center') 
                 self.settingsButton.place(relx = 0.09, rely = 0.92, anchor = 'center') 
                 self.display.lift()
                
@@ -393,7 +394,8 @@ class Stopwatch:
                 self.ao12Label.place_forget()
                 self.settingsButton.place_forget()
                 self.scrambleImage.place_forget()
-                
+                self.recordButton.place_forget()
+       
                 self.lastScramble = self.scramble.cget("text")
                 self.display.update_idletasks() 
 
