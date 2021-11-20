@@ -111,8 +111,22 @@ class Stopwatch:
         self.recordButton = tk.Button(self.root,image = recordImage,highlightthickness = 0,command=self.view_records)
         self.recordButton.place(relx = 0.3, rely = 0.92, anchor = 'center') 
 
+        #pb image label
+        pbImage = tk.PhotoImage(file = self.resources + "pb.gif")
+        self.pbImage = tk.Label(self.root,bg = "#BFBFBF" ,image = pbImage)
+        
+        #record title label
+        self.recordTitle = tk.Label(self.root, bg = "#BFBFBF",text='3x3x3 Personal Bests', font = ("Arial 18 bold"))
 
-
+        #pb record label
+        self.singleRecord = tk.Label(self.root, bg = "#BFBFBF",text='Single: ', font = ("Arial 15 bold"))
+        
+        #ao5 record label
+        self.ao5Record = tk.Label(self.root, bg = "#BFBFBF",text='ao5: ', font = ("Arial 15 bold"))
+ 
+        #ao12 title label
+        self.ao12Record = tk.Label(self.root, bg = "#BFBFBF",text='ao12: ', font = ("Arial 15 bold"))
+ 
         #back button
         self.backButton = tk.Button(self.root,text = 'Back',font = ("Arial 12 bold"),command=self.view_timer)  
         
@@ -585,6 +599,11 @@ class Stopwatch:
         self.inspectionLabel.place_forget()
         self.bar.place_forget()
         self.sleepButton.place_forget()
+        self.pbImage.place_forget()
+        self.recordTitle.place_forget()
+        self.singleRecord.place_forget()
+        self.ao5Record.place_forget()
+        self.ao12Record.place_forget()
 
     def view_settings(self):
         self.lastSelectedCube = self.selectedCube.get()
@@ -609,11 +628,15 @@ class Stopwatch:
         self.settingsButton.place_forget()
         self.scrambleImage.place_forget()
         self.recordButton.place_forget()
+        self.pbImage.place_forget()
+        self.recordTitle.place_forget()        
 
     def view_records(self): 
         location = self.solvepath + "solves" + self.selectedCube.get() + ".txt"
-        self.backButton.place(relx = 0.11, rely = 0.92, anchor = 'center')
-
+        self.backButton.place(relx = 0.5, rely = 0.92, anchor = 'center')
+        self.pbImage.place(anchor = tk.NW)
+        self.recordTitle.config(text = self.selectedCube.get() + " Personal Bests")
+        self.recordTitle.place(relx = 0.5, rely = 0.1, anchor = 'center')
 
         if os.path.isfile(location):
             solveFile = open(location)
@@ -648,10 +671,18 @@ class Stopwatch:
 
         ao5Array.sort()
         ao12Array.sort()
-        print(ao5Array[0])
-        print(ao12Array[0])        
+        ao5 = self.convert_time(ao5Array[0])
+        ao12 = self.convert_time(ao12Array[0])        
 
-        print(sortedArray[0])
+        #print(sortedArray[0])
+
+        self.singleRecord.config(text = "Single: " + str(sortedArray[0]))
+        self.ao5Record.config(text = "ao5: " + str(ao5))
+        self.ao12Record.config(text = "ao12: " + str(ao12))
+
+        self.singleRecord.place(relx = 0.5, rely = 0.3, anchor = 'center')
+        self.ao5Record.place(relx = 0.5, rely = 0.5, anchor = 'center')
+        self.ao12Record.place(relx = 0.5, rely = 0.7, anchor = 'center')
 
         self.ao5Label.place_forget()
         self.ao12Label.place_forget()
@@ -699,6 +730,20 @@ class Stopwatch:
                     
         return (total / (number - 2))
 
+
+    def convert_time(self,time):
+
+        time = '%.2f' % time 
+        minstr = float(time)/60
+
+        if(int(minstr) > 0):
+            secstr = '%.2f' % (float(time) - (int(minstr) * 60))
+            if (float(time) - (int(minstr) * 60) )< 10:
+                return str(int(minstr)) + ":0" + str(secstr) 
+            else:
+                return str(int(minstr)) + ":" + str(secstr)
+        else:
+            return time
 
     def remove_selected(self):
         
