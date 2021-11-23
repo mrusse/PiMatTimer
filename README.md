@@ -2,6 +2,8 @@
 A full-featured Rubik's cube timer made to run on a Raspberry Pi running Raspberry Pi OS. Inspiration taken from the stackmat timer for the
 hardware and from csTimer for the software.
 
+[![Example Solves and Feature Presentation](https://i.imgur.com/VXLWDD7.png)](https://www.youtube.com/watch?v=ox_MspGBqCA)
+
 # Hardware
 This timer is made to integrate with a 3d printed case I designed. The case integrates a 3.5 inch touch screen, a 10000mah battery, and two buttons to start and stop the timer stackmat style. The buttons connect to GPIO19 and GPIO26 (physical pins 35 and 37).
 
