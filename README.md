@@ -6,7 +6,8 @@ hardware and from csTimer for the software.
 This timer is made to integrate with a 3d printed case I designed. The case integrates a 3.5 inch touch screen, a 10000mah battery, and two buttons to start and stop the timer stackmat style. The buttons connect to GPIO19 and GPIO26 (physical pins 35 and 37).
 
 ![3d printed case for the 3b+](https://i.imgur.com/IAsu6mP.jpg)
-More information about the hardware will come soon.
+
+[View the design on cults3d to learn more](https://cults3d.com/en/3d-model/gadget/pimat-rubiks-cube-timer-99michaelrussell-2)
 
 # Installation
 When cloning this repo to your pi make sure to also clone the submodules
