@@ -3,7 +3,7 @@ A full-featured Rubik's cube timer made to run on a Raspberry Pi running Raspber
 hardware and from csTimer for the software.
 
 
-### Example Solves and Feature Presentation
+### Example solves and feature presentation video 
 [![Example Solves and Feature Presentation](https://i.imgur.com/VXLWDD7.png)](https://www.youtube.com/watch?v=ox_MspGBqCA)
 
 # Hardware
