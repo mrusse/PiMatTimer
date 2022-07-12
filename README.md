@@ -11,7 +11,7 @@ This timer is made to integrate with a 3d printed case I designed. The case inte
 
 ![3d printed case for the 3b+](https://i.imgur.com/IAsu6mP.jpg)
 
-[View the design on cults3d to learn more](https://cults3d.com/en/3d-model/gadget/pimat-rubiks-cube-timer-99michaelrussell-2)
+[View the design on Printables to learn more](https://www.printables.com/model/240596-pimat-rubiks-cube-timer)
 
 # Installation
 When cloning this repo to your pi make sure to also clone the submodules
