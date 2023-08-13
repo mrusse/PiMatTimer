@@ -14,7 +14,7 @@ This timer is made to integrate with a 3d printed case I designed. The case inte
 [View the design on Printables to learn more](https://www.printables.com/model/240596-pimat-rubiks-cube-timer)
 
 # Installation
-When cloning this repo to your pi make sure to also clone the submodules
+When cloning this repo to your pi make sure to also clone the submodules ([access denied (publickey) error?](#access-denied))
 ```
 git clone git@github.com:mrusse/PiMatTimer --recurse-submodules
 ```
@@ -86,3 +86,22 @@ If the pi has a wifi connection it will also show the link to a local webserver 
 ![5x5 session](https://i.imgur.com/xjU86jv.png)
 
 ![5x5 solves](https://i.imgur.com/nuAKNQR.png)
+
+### Access Denied
+
+If you don't have a GitHub account or SSH credentials set up, you will get an access denied (publickey) error because of GitHub's security concerns.
+
+Aside from creating a GitHub account and setting that up, you can also make Git clone from HTTPS instead of SSH:
+
+```bash
+# Use HTTPS instead of SSH by default
+git config --global url."https://github.com/".insteadOf git@github.com:
+
+# Clone the repo and its submodules
+git clone git@github.com:mrusse/PiMatTimer --recurse-submodules
+
+# Undo the HTTPS setting
+git config --global --unset url."https://github.com/".insteadOf
+```
+
+Even though it is possible to `git clone https://github.com/mrusse/PiMatTimer`, Git will still default to SSH, which will still throw the error during the cloning of the submodules.
