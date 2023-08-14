@@ -14,8 +14,11 @@ This timer is made to integrate with a 3d printed case I designed. The case inte
 [View the design on Printables to learn more](https://www.printables.com/model/240596-pimat-rubiks-cube-timer)
 
 # Installation
-When cloning this repo to your pi make sure to also clone the submodules
+Make sure your username on the Raspberry Pi is `pi` and that you clone this repo in the `$HOME` directory (e.g., `/home/pi`). The script assumes these paths. Run `cd ~` if you are unsure if you're in the home directory.
+
+When cloning this repo to your pi make sure to also clone the submodules ([access denied (publickey) error?](#access-denied)):
 ```
+cd ~
 git clone git@github.com:mrusse/PiMatTimer --recurse-submodules
 ```
 
@@ -29,7 +32,7 @@ The program also requires nodejs so install that on the pi if you don't have it 
 sudo apt-get install nodejs
 ```
 
-You could now run the program by doing ```python3 timer.py``` however you should setup the program to run at startup if you are using the pi as a dedicated timer.
+You could now run the program by doing ```python3 timer.py``` however you should setup the program to run at startup if you are using the pi as a dedicated timer. If the timer does not start, check out the troubleshooting below.
 
 You can use autostart to do this on the pi
 ```
@@ -86,3 +89,27 @@ If the pi has a wifi connection it will also show the link to a local webserver 
 ![5x5 session](https://i.imgur.com/xjU86jv.png)
 
 ![5x5 solves](https://i.imgur.com/nuAKNQR.png)
+
+## Troubleshooting
+
+### Access Denied
+
+If you don't have a GitHub account or SSH credentials set up, you will get an access denied (publickey) error because of GitHub's security concerns.
+
+Aside from creating a GitHub account and setting that up, you can also make Git clone from HTTPS instead of SSH:
+
+```bash
+# Use HTTPS instead of SSH by default
+git config --global url."https://github.com/".insteadOf git@github.com:
+
+# Clone the repo and its submodules
+git clone git@github.com:mrusse/PiMatTimer --recurse-submodules
+
+# Undo the HTTPS setting
+git config --global --unset url."https://github.com/".insteadOf
+```
+
+Even though it is possible to `git clone https://github.com/mrusse/PiMatTimer`, Git will still default to SSH, which will still throw the error during the cloning of the submodules.
+
+### `_tkinter.TclError: no display name and no $DISPLAY environment variable`
+Got this issue on a Raspberry Pi 4 Model B Rev1.1; solution was to `export DISPLAY=:0.0`, but to make this setting persist on reboot you'll need to add it to your `.*rc` file (e.g., append it to the bottom of `~/.bashrc` or `~/.zshrc`, whichever file exists).
