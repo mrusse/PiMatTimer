@@ -13,7 +13,18 @@ This timer is made to integrate with a 3d printed case I designed. The case inte
 
 [View the design on Printables to learn more](https://www.printables.com/model/240596-pimat-rubiks-cube-timer)
 
-# Installation
+# Installation (Automatic)
+
+This is an experimental method that assumes the Pi you're using is a throwaway device meant to act solely as the timer. The device used to make this script is a 4GB Pi 4 with SSH + WiFi pre-configured before install but with no LCD drivers.
+
+To start, `ssh` into your Pi and run:
+
+```bash
+bash <(curl -s https://github.com/mrusse/PiMatTimer/raw/main/install.sh)
+```
+
+# Installation (Manual)
+
 Make sure your username on the Raspberry Pi is `pi` and that you clone this repo in the `$HOME` directory (e.g., `/home/pi`). The script assumes these paths. Run `cd ~` if you are unsure if you're in the home directory.
 
 When cloning this repo to your pi make sure to also clone the submodules ([access denied (publickey) error?](#access-denied)):
