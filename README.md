@@ -4,7 +4,10 @@ hardware and from csTimer for the software.
 
 
 ### Example solves and feature presentation video 
-[![Example Solves and Feature Presentation](https://i.imgur.com/VXLWDD7.png)](https://www.youtube.com/watch?v=ox_MspGBqCA)
+
+https://github.com/mrusse/PiMatTimer/assets/38119333/925fb308-b0aa-4879-975b-7e0f8bc66490
+
+[View video on YouTube](https://www.youtube.com/watch?v=ox_MspGBqCA)
 
 # Hardware
 This timer is made to integrate with a 3d printed case I designed. The case integrates a 3.5 inch touch screen, a 10000mah battery, and two buttons to start and stop the timer stackmat style. The buttons connect to GPIO19 and GPIO26 (physical pins 35 and 37).
