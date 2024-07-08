@@ -20,10 +20,16 @@ This timer is made to integrate with a 3d printed case I designed. The case inte
 
 This is an experimental method that assumes the Pi you're using is a throwaway device meant to act solely as the timer. The device used to make this script is a 4GB Pi 4 with SSH + WiFi pre-configured before install but with no LCD drivers.
 
+- Make sure when you enable `ssh`, that the username is `pi` and not the name it suggests
+  - The timer code assumes this username and will not work otherwise
+  - The screen will stay white and you will have to `ssh` into it using the credentials you specify when burning the device: the LCD drivers being installed is included in the script
+- If you plan on doing this process multiple times, it is recommended that you download the `img`/`xz` and have it on you in case it tries to re-download it another time
+- If the `curl` command doesn't work, try to `wget` it and then run `bash install.sh`
+
 To start, `ssh` into your Pi and run:
 
 ```bash
-bash <(curl -s https://github.com/mrusse/PiMatTimer/raw/main/install.sh)
+bash <(curl -sSL https://github.com/mrusse/PiMatTimer/raw/main/install.sh)
 ```
 
 # Installation (Manual)
